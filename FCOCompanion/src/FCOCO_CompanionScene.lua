@@ -166,8 +166,34 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
 --d(">collectibleIde: " .. tostring(companionCollectibleId) .. ", doUseNow: " ..tostring(doUseNow))
 
     if doUseNow == true then
-        --Use the companion collectibleId
-        UseCollectible(companionCollectibleId)
+
+        local isCollectibleUsable = IsCollectibleUsable(companionCollectibleId)
+        local isCollectibleBlocked = IsCollectibleBlocked(companionCollectibleId)
+        local collectibleBlockReason = GetCollectibleBlockReason(companionCollectibleId)
+        local collectableCooldownLeft = GetCollectibleCooldownAndDuration(companionCollectibleId)
+
+--d(">Collectible usable: " ..tostring(isCollectibleUsable) .. ", blocked: " ..tostring(isCollectibleBlocked) .. ", blockReason: " ..tostring(collectibleBlockReason) .. ", cdLeft: " ..tostring(collectableCooldownLeft))
+        local delay = 0
+        if isCollectibleUsable == true then
+            if not isCollectibleBlocked or (isCollectibleBlocked and collectibleBlockReason == COLLECTIBLE_USAGE_BLOCK_REASON_NOT_BLOCKED) then
+                if collectableCooldownLeft ~= nil and collectableCooldownLeft > 0 and doShow == true then
+                    --Collectible is on cooldown. Delay the call to the summon process by the cooldown left
+                    delay = collectableCooldownLeft
+                end
+            else
+                --Collectible blocked
+                return
+            end
+        else
+            --Collectible not usable
+            return
+        end
+
+        --Use the companion collectibleId, delayed if any cooldown left
+        zo_callLater(function()
+--d("!!! Using collectible: companionCollectibleId !!! - Delayed: " ..tostring(delay))
+            UseCollectible(companionCollectibleId)
+        end, delay)
     end
 end
 FCOCompanion.ToggleCompanion = toggleCompanion

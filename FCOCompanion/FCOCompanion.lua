@@ -12,11 +12,16 @@ local EM = EVENT_MANAGER
 local actualCompanionDefId
 local function checkForActiveCompanion()
     actualCompanionDefId = nil
+    local isPending = false
+    local isActive = false
     if HasPendingCompanion() then
         actualCompanionDefId = GetPendingCompanionDefId()
+        isPending = true
     elseif HasActiveCompanion() == true then
         actualCompanionDefId = GetActiveCompanionDefId()
+        isActive = true
     end
+    return isPending, isActive
 end
 
 --Player activated function
@@ -24,8 +29,10 @@ function FCOCompanion.Player_Activated(eventId, waFirst)
     --Tasks here
 
     --Update settings values for the last active companion
-    checkForActiveCompanion()
-    FCOCompanion.settingsVars.settings.lastCompanionId = actualCompanionDefId
+    local isPending, isActive = checkForActiveCompanion()
+    if isPending or isActive then
+        FCOCompanion.settingsVars.settings.lastCompanionId = actualCompanionDefId
+    end
 
     FCOCompanion.playerActivatedDone = true
 end
@@ -44,13 +51,31 @@ function FCOCompanion.CraftingTableInteract(eventId, craftSkill, sameStation)
         return
     end
     --Unsummon the companion if summoned
-    checkForActiveCompanion()
+    local isPending, isActive = checkForActiveCompanion()
     if actualCompanionDefId ~= nil then
-        --Companion is summoning/summoned
-        --Save the last summoned ID first
-        lastCompanionIdBeforeCrafting = actualCompanionDefId
-        --Unsummon it now
-        FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrafting, false, true)
+        if isActive then
+            --Companion is summoning/summoned
+            --Save the last summoned ID first
+            lastCompanionIdBeforeCrafting = actualCompanionDefId
+            --Unsummon it now
+            FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrafting, false, true)
+        elseif isPending then
+            EM:RegisterForEvent(addonVars.addonName .. "_CraftingTable", EVENT_COMPANION_ACTIVATED, function()
+--d(">companion summon finished after crafting table was opened")
+                EM:UnregisterForEvent(addonVars.addonName .. "_CraftingTable", EVENT_COMPANION_ACTIVATED)
+                --Check if we are still at a crafting table
+                if not ZO_CraftingUtils_IsCraftingWindowOpen() and not ZO_CraftingUtils_IsPerformingCraftProcess() then
+--d("<<not crafting anymore!")
+                    lastCompanionIdBeforeCrafting = nil
+                    return
+                end
+                --Companion is summoning/summoned
+                --Save the last summoned ID first
+                lastCompanionIdBeforeCrafting = actualCompanionDefId
+                --Unsummon it now
+                FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrafting, false, true)
+            end)
+        end
     end
 end
 

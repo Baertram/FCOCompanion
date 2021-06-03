@@ -13,7 +13,7 @@ local stringsEN = {
     FCOCO_LAM_SV_ACCOUNT_WIDE                               = "Account wide",
 
     FCOCO_LAM_SETTING_HEADER_CRAFTING                       = GetString(SI_SKILLTYPE8),
-    FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE            = "Un-summon at crafting table",
+    FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE            = "Dismiss at crafting table",
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT         = "Hide your active companion if you interact with a crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE         = "Re-summon after crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_TT      = "Summon your last active companion again after leaving the crafting table",
