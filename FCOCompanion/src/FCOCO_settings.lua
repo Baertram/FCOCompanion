@@ -27,9 +27,14 @@ function FCOCompanion.getSettings()
     local defaults = {
         alwaysUseClientLanguage			    = true,
 
+        companionIsSummoned                 = false,
         lastCompanionId                     = 1, --Bastian Helix, companionDefId 1
         unSummonAtCraftingTables            = true,
         reSummonAfterCraftingTables         = true,
+        unSummonAtBanks                     = false,
+        reSummonAfterBanks                  = false,
+        unSummonAtVendors                   = false,
+        reSummonAfterVendors                = false,
     }
     FCOCompanion.settingsVars.defaults = defaults
 

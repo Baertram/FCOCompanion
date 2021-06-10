@@ -17,6 +17,18 @@ local stringsEN = {
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT         = "Hide your active companion if you interact with a crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE         = "Re-summon after crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_TT      = "Summon your last active companion again after leaving the crafting table",
+
+    FCOCO_LAM_SETTING_HEADER_BANKS                          = GetString(SI_CURRENCYLOCATION1),
+    FCOCO_LAM_SETTING_UNSUMMON_AT_BANK                      = "Dismiss at bank",
+    FCOCO_LAM_SETTING_UNSUMMON_AT_BANK_TT                   = "Hide your active companion if you interact with a bank",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK                   = "Re-summon after bank",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_TT                = "Summon your last active companion again after leaving the bank",
+
+    FCOCO_LAM_SETTING_HEADER_VENDORS                        = GetString(SI_MAPDISPLAYFILTER2),
+    FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR                    = "Dismiss at vendor/fence",
+    FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR_TT                 = "Hide your active companion if you interact with a vendor/fence",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR                 = "Re-summon after vendor/fence",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_TT              = "Summon your last active companion again after leaving the vendor/fence",
 }
 
 for stringId, stringValue in pairs(stringsEN) do

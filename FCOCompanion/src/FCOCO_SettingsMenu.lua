@@ -84,6 +84,58 @@ function FCOCompanion.buildAddonMenu()
             disabled = function() return not settings.unSummonAtCraftingTables end,
             width="full",
         },
+        --==============================================================================
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_BANKS),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_BANK),
+            tooltip = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_BANK_TT),
+            getFunc = function() return settings.unSummonAtBanks end,
+            setFunc = function(value) settings.unSummonAtBanks = value
+            end,
+            default = defaults.unSummonAtBanks,
+            width="full",
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_TT),
+            getFunc = function() return settings.reSummonAfterBanks end,
+            setFunc = function(value) settings.reSummonAfterBanks = value
+            end,
+            default = defaults.reSummonAfterBanks,
+            disabled = function() return not settings.unSummonAtBanks end,
+            width="full",
+        },
+        --==============================================================================
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_VENDORS),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR),
+            tooltip = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR_TT),
+            getFunc = function() return settings.unSummonAtVendors end,
+            setFunc = function(value) settings.unSummonAtVendors = value
+            end,
+            default = defaults.unSummonAtVendors,
+            width="full",
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_TT),
+            getFunc = function() return settings.reSummonAfterVendors end,
+            setFunc = function(value) settings.reSummonAfterVendors = value
+            end,
+            default = defaults.reSummonAfterVendors,
+            disabled = function() return not settings.unSummonAtVendors end,
+            width="full",
+        },
     } -- optionsTable
     -- END OF OPTIONS TABLE
     --[[
