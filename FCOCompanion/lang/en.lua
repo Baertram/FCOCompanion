@@ -29,6 +29,10 @@ local stringsEN = {
     FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR_TT                 = "Hide your active companion if you interact with a vendor/fence",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR                 = "Re-summon after vendor/fence",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_TT              = "Summon your last active companion again after leaving the vendor/fence",
+
+    FCOCO_LAM_SETTING_HEADER_COMPASS                        = GetString(SI_CUSTOMERSERVICESUBMITFEEDBACKSUBCATEGORIES1304),
+    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS                = "Disable pin at compass",
+    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS_TT             = "Disable the companion's pin at the compass",
 }
 
 for stringId, stringValue in pairs(stringsEN) do

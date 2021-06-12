@@ -38,6 +38,7 @@ end
 --Player activated function
 function FCOCompanion.Player_Activated(eventId, waFirst)
     --Tasks here
+    FCOCompanion.UpdateCompass()
 
     --Update settings values for the last active companion
     local isPending, isActive = checkForActiveCompanion()

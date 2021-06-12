@@ -35,6 +35,7 @@ function FCOCompanion.getSettings()
         reSummonAfterBanks                  = false,
         unSummonAtVendors                   = false,
         reSummonAfterVendors                = false,
+        disableCompanionAtCompass           = false,
     }
     FCOCompanion.settingsVars.defaults = defaults
 

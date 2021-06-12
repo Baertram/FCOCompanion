@@ -136,6 +136,25 @@ function FCOCompanion.buildAddonMenu()
             disabled = function() return not settings.unSummonAtVendors end,
             width="full",
         },
+        --==============================================================================
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_COMPASS),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS),
+            tooltip = GetString(FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS_TT),
+            getFunc = function() return settings.disableCompanionAtCompass end,
+            setFunc = function(value)
+                settings.disableCompanionAtCompass = value
+                FCOCompanion.UpdateCompass()
+            end,
+            default = defaults.disableCompanionAtCompass,
+            width="full",
+        },
+
+
     } -- optionsTable
     -- END OF OPTIONS TABLE
     --[[
