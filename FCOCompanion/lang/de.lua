@@ -27,8 +27,8 @@ local stringsDE = {
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR             = "Wieder beschwören nach dem Händler/Hehler",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_TT          = "Beschwört den zuletzt aktiven Begleiter, wenn du den Händler/Hehler wieder verlässt",
 
-    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS                = "Disable pin at compass",
-    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS_TT             = "Disable the companion's pin at the compass",
+    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS            = "Kompass Pin verstecken",
+    FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS_TT         = "Verstecke den Gefährten Pin auf dem Kompass",
 }
 
 for stringId, stringValue in pairs(stringsDE) do
