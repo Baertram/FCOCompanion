@@ -176,10 +176,10 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
         local delay = 0
         if isCollectibleUsable == true then
             if not isCollectibleBlocked or (isCollectibleBlocked and collectibleBlockReason == COLLECTIBLE_USAGE_BLOCK_REASON_NOT_BLOCKED) then
-                if collectableCooldownLeft ~= nil and collectableCooldownLeft > 0 and doShow == true then
-                    --Collectible is on cooldown. Delay the call to the summon process by the cooldown left
-                    delay = collectableCooldownLeft
-                end
+                if collectableCooldownLeft ~= nil and collectableCooldownLeft > 0 then --and doShow == true then
+                --Collectible is on cooldown. Delay the call to the summon/dismiss process by the cooldown left
+                delay = collectableCooldownLeft
+            end
             else
                 --Collectible blocked
                 return

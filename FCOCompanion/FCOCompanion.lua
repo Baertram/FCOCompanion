@@ -403,52 +403,6 @@ local function isCrouching()
     return isCurrentlyCrouching
 end
 
-local function OnCrouchingStart()
-    local isInCombat = IsUnitInCombat("player")
---d(">crouching start - isInCombat: " ..tostring(isInCombat))
-
-    local settings = FCOCompanion.settingsVars.settings
-    if not settings.unSummonAtCrouching then
-        lastCompanionIdBeforeCrouch = nil
-        return
-    end
-    --Only dismiss if not in combat?
-    if not settings.unSummonAtCrouchingNoCombat and isInCombat then
-        lastCompanionIdBeforeCrouch = nil
-        return
-    end
-
-    --Unsummon the companion if summoned
-    local isPending, isActive = checkForActiveCompanion()
-    if actualCompanionDefId ~= nil then
-        if isActive then
-            companionWasSummonedBefore = true
-            --Companion is summoning/summoned
-            --Save the last summoned ID first
-            lastCompanionIdBeforeCrouch = actualCompanionDefId
-            --Unsummon it now
-            FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
-        elseif isPending then
-            companionWasSummonedBefore = true
-            EM:RegisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED, function()
-                --d(">companion summon finished after fishing was started")
-                EM:UnregisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED)
-                --Check if we are crouching again
-                if isCrouching() then
---d("<<crouching again!")
-                    lastCompanionIdBeforeCrouch = nil
-                    return
-                end
-                --Companion is summoning/summoned
-                --Save the last summoned ID first
-                lastCompanionIdBeforeCrouch = actualCompanionDefId
-                --Unsummon it now
-                FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
-            end)
-        end
-    end
-end
-
 local function setupCrouchEndTimerCallback()
 --d("setupCrouchEndTimerCallback")
     local eventUpdateNameCrouch = addonName .. "_CrouchingReSummon"
@@ -483,7 +437,54 @@ local function setupCrouchEndTimerCallback()
     EM:RegisterForUpdate(eventUpdateNameCrouch, delay, callbackFunc)
 end
 
+local function OnCrouchingStart()
+    local isInCombat = IsUnitInCombat("player")
+--d(">crouching start - isInCombat: " ..tostring(isInCombat))
+
+    local settings = FCOCompanion.settingsVars.settings
+    if not settings.unSummonAtCrouching then
+        lastCompanionIdBeforeCrouch = nil
+        return
+    end
+    --Only dismiss if not in combat?
+    if not settings.unSummonAtCrouchingNoCombat and isInCombat then
+        lastCompanionIdBeforeCrouch = nil
+        return
+    end
+
+    --Unsummon the companion if summoned
+    local isPending, isActive = checkForActiveCompanion()
+    if actualCompanionDefId ~= nil then
+        if isActive then
+            companionWasSummonedBefore = true
+            --Companion is summoning/summoned
+            --Save the last summoned ID first
+            lastCompanionIdBeforeCrouch = actualCompanionDefId
+            --Unsummon it now
+            FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
+        elseif isPending then
+            companionWasSummonedBefore = true
+            EM:RegisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED, function()
+--d(">companion summon finished after croching was started")
+                EM:UnregisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED)
+                --Check if we are crouching again
+                if not isCrouching() then
+                    lastCompanionIdBeforeCrouch = nil
+                    return
+                end
+--d(">>dismissing now as we are crouching")
+                --Companion is summoning/summoned
+                --Save the last summoned ID first
+                lastCompanionIdBeforeCrouch = actualCompanionDefId
+                --Unsummon it now
+                FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
+            end)
+        end
+    end
+end
+
 local function OnCrouchingEnded()
+--d("OnCrouchingEnded")
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtCrouching or not settings.reSummonAfterCrouching then
         lastCompanionIdBeforeCrouch = nil
@@ -528,7 +529,6 @@ local function OnStealthStateChanged(eventId, unitTag, newStealthState)
     local newStealthStateText = stealtStates[newStealthState] or "n/a"
 d("Stealth state - " ..tostring(newStealthState) .." / " ..tostring(newStealthStateText))
 ]]
-
     local stealthStatesToHideCompanion = {
         [STEALTH_STATE_NONE]                    = false,
         [STEALTH_STATE_DETECTED]                = false,
