@@ -139,6 +139,97 @@ function FCOCompanion.buildAddonMenu()
         --==============================================================================
         {
             type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_FISHING),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_FISHING),
+            tooltip = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_FISHING_TT),
+            getFunc = function() return settings.unSummonAtFishing end,
+            setFunc = function(value) settings.unSummonAtFishing = value
+            end,
+            default = defaults.unSummonAtFishing,
+            width="full",
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_TT),
+            getFunc = function() return settings.reSummonAfterFishing end,
+            setFunc = function(value) settings.reSummonAfterFishing = value
+            end,
+            default = defaults.reSummonAfterFishing,
+            disabled = function() return not settings.unSummonAtFishing end,
+            width="full",
+        },
+        {
+            type = "slider",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_DELAY),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_DELAY_TT),
+            getFunc = function() return settings.reSummonAfterFishingDelay end,
+            setFunc = function(value) settings.reSummonAfterFishingDelay = value
+            end,
+            min = 0,
+            max = 60000,
+            step = 1000,
+            default = defaults.reSummonAfterFishingDelay,
+            disabled = function() return not settings.unSummonAtFishing or not settings.reSummonAfterFishing end,
+            width="full",
+        },
+        --==============================================================================
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_CROUCH),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_CROUCHING),
+            tooltip = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_CROUCHING_TT),
+            getFunc = function() return settings.unSummonAtCrouching end,
+            setFunc = function(value) settings.unSummonAtCrouching = value
+            end,
+            default = defaults.unSummonAtCrouching,
+            width="full",
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_CROUCHING_NO_COMBAT),
+            tooltip = GetString(FCOCO_LAM_SETTING_UNSUMMON_AT_CROUCHING_NO_COMBAT_TT),
+            getFunc = function() return settings.unSummonAtCrouchingNoCombat end,
+            setFunc = function(value) settings.unSummonAtCrouchingNoCombat = value
+            end,
+            default = defaults.unSummonAtCrouchingNoCombat,
+            disabled = function() return not settings.unSummonAtCrouching end,
+            width="full",
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_TT),
+            getFunc = function() return settings.reSummonAfterCrouching end,
+            setFunc = function(value) settings.reSummonAfterCrouching = value
+            end,
+            default = defaults.reSummonAfterCrouching,
+            disabled = function() return not settings.unSummonAtCrouching end,
+            width="full",
+        },
+        {
+            type = "slider",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_DELAY),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_DELAY_TT),
+            getFunc = function() return settings.reSummonAfterCrouchingDelay end,
+            setFunc = function(value) settings.reSummonAfterCrouchingDelay = value
+            end,
+            min = 0,
+            max = 60000,
+            step = 1000,
+            default = defaults.reSummonAfterCrouchingDelay,
+            disabled = function() return not settings.unSummonAtCrouching or not settings.reSummonAfterCrouching end,
+            width="full",
+        },
+        --==============================================================================
+        {
+            type = 'header',
             name = GetString(FCOCO_LAM_SETTING_HEADER_COMPASS),
         },
         {

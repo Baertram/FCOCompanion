@@ -35,7 +35,14 @@ function FCOCompanion.getSettings()
         reSummonAfterBanks                  = false,
         unSummonAtVendors                   = false,
         reSummonAfterVendors                = false,
+        unSummonAtFishing                   = false,
+        reSummonAfterFishing                = false,
+        reSummonAfterFishingDelay           = 5000,
         disableCompanionAtCompass           = false,
+        unSummonAtCrouching                 = false,
+        unSummonAtCrouchingNoCombat         = false,
+        reSummonAfterCrouching              = false,
+        reSummonAfterCrouchingDelay         = 5000,
     }
     FCOCompanion.settingsVars.defaults = defaults
 

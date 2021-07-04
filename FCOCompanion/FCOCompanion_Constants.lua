@@ -5,7 +5,7 @@ local FCOCompanion = FCOCO
 --[Addon variables]
 FCOCompanion.addonVars = {}
 local addonVars = FCOCompanion.addonVars
-addonVars.addonVersion		        = 0.07
+addonVars.addonVersion		        = 0.09
 addonVars.addonSavedVarsVersion	    = "0.04"
 addonVars.addonSavedVarsForAllTable = "SettingsForAll"
 addonVars.addonSavedVarsNormalTable = "Settings"
