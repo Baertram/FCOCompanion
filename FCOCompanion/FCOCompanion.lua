@@ -460,6 +460,7 @@ local function OnCrouchingStart()
             --Companion is summoning/summoned
             --Save the last summoned ID first
             lastCompanionIdBeforeCrouch = actualCompanionDefId
+--d(">unsummon companion: " ..tostring(lastCompanionIdBeforeCrouch))
             --Unsummon it now
             FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
         elseif isPending then
@@ -532,16 +533,16 @@ d("Stealth state - " ..tostring(newStealthState) .." / " ..tostring(newStealthSt
     local stealthStatesToHideCompanion = {
         [STEALTH_STATE_NONE]                    = false,
         [STEALTH_STATE_DETECTED]                = false,
-        [STEALTH_STATE_HIDING]                  = true,
+        [STEALTH_STATE_HIDING]                  = false,
         [STEALTH_STATE_HIDDEN]                  = true,
-        [STEALTH_STATE_HIDDEN_ALMOST_DETECTED]  = true,
-        [STEALTH_STATE_STEALTH]                 = true,
-        [STEALTH_STATE_STEALTH_ALMOST_DETECTED] = true,
+        [STEALTH_STATE_HIDDEN_ALMOST_DETECTED]  = false,
+        [STEALTH_STATE_STEALTH]                 = false,
+        [STEALTH_STATE_STEALTH_ALMOST_DETECTED] = false,
     }
     local hideCompanionNow = stealthStatesToHideCompanion[newStealthState] or false
     if newStealthState == STEALTH_STATE_NONE then
         OnCrouchingEnded()
-    elseif hideCompanionNow then
+    elseif hideCompanionNow == true then
         OnCrouchingStart()
     end
 end
