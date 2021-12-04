@@ -46,6 +46,37 @@ local function onCollectibleUseResult(eventId, result, isAttemptingActivation)
     end
 end
 
+--[[
+function FCOCompanion.HideCompanionUltimate(shouldHide)
+    local ultiButtonCompanion = CompanionUltimateButton
+    if not ultiButtonCompanion then return end
+    shouldHide = shouldHide or FCOCompanion.settingsVars.settings.hideCompanionUltimate
+    local isHidden = ultiButtonCompanion:IsHidden() or false
+--d("HideCompanionUltimate - isHidden: " ..tostring(isHidden) .. ", shouldHide: " ..tostring(shouldHide))
+    if shouldHide ~= isHidden then
+        ultiButtonCompanion:SetHidden(shouldHide)
+    end
+end
+local hideCompanionUltimate = FCOCompanion.HideCompanionUltimate
+
+function FCOCompanion.SetupCompanionUltimateButton()
+    local shouldHide = FCOCompanion.settingsVars.settings.hideCompanionUltimate
+    hideCompanionUltimate(shouldHide)
+    if shouldHide == true then
+        EM:RegisterForEvent(addonName .. "_EVENT_ACTION_BAR_SWITCHED", EVENT_ACTIVE_WEAPON_PAIR_CHANGED, function(eventId, activeWeaponPair, locked)
+--d("[FCOCOmpanion]ActiveWeaponPairChanged to: " ..tostring(activeWeaponPair) .. ", locked: " ..tostring(locked))
+            if locked == true then
+                zo_callLater(function()
+                    hideCompanionUltimate(shouldHide)
+                end, 0)
+            end
+        end)
+    else
+        EM:UnregisterForEvent(addonName .. "_EVENT_ACTION_BAR_SWITCHED", EVENT_ACTIVE_WEAPON_PAIR_CHANGED)
+    end
+end
+local setupCompanionUltimateButton = FCOCompanion.SetupCompanionUltimateButton
+]]
 
 --======================================================================================================================
 --Player activated function
@@ -58,6 +89,10 @@ function FCOCompanion.Player_Activated(eventId, waFirst)
     if isPending or isActive then
         FCOCompanion.settingsVars.settings.lastCompanionId = actualCompanionDefId
     end
+
+    --Hide/show the ultimate button
+    --setupCompanionUltimateButton()
+
 
     FCOCompanion.playerActivatedDone = true
 end
@@ -74,17 +109,71 @@ function FCOCompanion.Companion_DeActivated(eventId)
     FCOCompanion.settingsVars.settings.companionIsSummoned = false
 end
 
+
+--======================================================================================================================
+-- Is still ... checks
+--======================================================================================================================
+local lastCompanionIdBeforeCrafting
+local lastCompanionIdBeforeBank
+local lastCompanionIdBeforeVendor
+local lastCompanionIdBeforeFish
+local lastCompanionIdBeforeCrouch
+
+local isCurrentlyCrafting = false
+local isCurrentlyAtBank = false
+local isCurrentlyAtVendor = false
+local isCurrentlyFishing = false
+local isCurrentlyCrouching = false
+
+local function resetIsAtVars()
+    isCurrentlyCrafting = false
+    isCurrentlyAtBank = false
+    isCurrentlyAtVendor = false
+    isCurrentlyFishing = false
+    isCurrentlyCrouching = false
+end
+
+local function resetLastCompanionIdVars()
+    lastCompanionIdBeforeCrafting = nil
+    lastCompanionIdBeforeBank = nil
+    lastCompanionIdBeforeVendor = nil
+    lastCompanionIdBeforeFish = nil
+    lastCompanionIdBeforeCrouch = nil
+end
+
+local function isFishing()
+    isCurrentlyFishing = (GetInteractionType() == INTERACTION_FISH) or false
+    return isCurrentlyFishing
+end
+local function isCrouching()
+    isCurrentlyCrouching = (currentStealthState ~= STEALTH_STATE_NONE) or false
+    return isCurrentlyCrouching
+end
+
+local function isStillAtChecks()
+    local settings = FCOCompanion.settingsVars.settings
+    local isCraftingYet = settings.unSummonAtCraftingTables and (ZO_CraftingUtils_IsCraftingWindowOpen() or ZO_CraftingUtils_IsPerformingCraftProcess() or isCurrentlyCrafting)
+    local isAtBankYet = settings.unSummonAtBanks and (IsBankOpen() or IsGuildBankOpen() or isCurrentlyAtBank)
+    local isAtVendorYet = settings.unSummonAtVendors and (ZO_Store_IsShopping() or isCurrentlyAtVendor)
+    local isFishingYet = settings.unSummonAtFishing and (isFishing())
+    local isCrouchingYet = settings.unSummonAtCrouching and (isCrouching())
+d(string.format("[isStillAtChecks]-isCraftingYet: %s, isAtBankYet: %s, isAtVendorYet: %s, isCrouchingYet: %s, isFishingYet: %s", tostring(isCraftingYet) , tostring(isAtBankYet) , tostring(isAtVendorYet) , tostring(isCrouchingYet) , tostring(isFishingYet)))
+    return isCraftingYet or isAtBankYet or isAtVendorYet or isCrouchingYet or isFishingYet
+end
+
 --======================================================================================================================
 -- CRAFTING
 --======================================================================================================================
-local lastCompanionIdBeforeCrafting
 function FCOCompanion.CraftingTableInteract(eventId, craftSkill, sameStation)
---d("[FCOCompanion]CraftingTableInteract BEGIN")
+d("[FCOCompanion]CraftingTableInteract BEGIN")
+    isCurrentlyCrafting = true
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtCraftingTables then
         lastCompanionIdBeforeCrafting = nil
         return
     end
+    EM:RegisterForEvent(addonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOCompanion.CraftingTableInteractEnd)
+
     --Unsummon the companion if summoned
     local isPending, isActive = checkForActiveCompanion()
     if actualCompanionDefId ~= nil then
@@ -98,11 +187,12 @@ function FCOCompanion.CraftingTableInteract(eventId, craftSkill, sameStation)
         elseif isPending then
             companionWasSummonedBefore = true
             EM:RegisterForEvent(addonVars.addonName .. "_CraftingTable", EVENT_COMPANION_ACTIVATED, function()
---d(">companion summon finished after crafting table was opened")
+d(">companion summon finished after crafting table was opened")
                 EM:UnregisterForEvent(addonVars.addonName .. "_CraftingTable", EVENT_COMPANION_ACTIVATED)
-                --Check if we are still at a crafting table
-                if not ZO_CraftingUtils_IsCraftingWindowOpen() and not ZO_CraftingUtils_IsPerformingCraftProcess() then
---d("<<not crafting anymore!")
+                --Check if we are not doing something that will unsummon the companion
+                if not isStillAtChecks() then
+d("<<not crafting anymore!")
+                    resetIsAtVars()
                     lastCompanionIdBeforeCrafting = nil
                     return
                 end
@@ -116,9 +206,68 @@ function FCOCompanion.CraftingTableInteract(eventId, craftSkill, sameStation)
     end
 end
 
-function FCOCompanion.CraftingTableInteractEnd(eventId, craftSkill)
+local function setupCraftEndTimerCallback()
+d("setupCraftEndTimerCallback")
+    local eventUpdateNameCraft = addonName .. "_ReSummon"
+    EM:UnregisterForUpdate(eventUpdateNameCraft)
+
+    if lastCompanionIdBeforeCrafting == nil or companionWasSummonedBefore == false then return end
     local settings = FCOCompanion.settingsVars.settings
---d("[FCOCompanion]CraftingTableInteract END - lastCompanionIdBeforeCrafting: " ..tostring(lastCompanionIdBeforeCrafting))
+    if not settings.reSummonAfterCraftingTables then return end
+
+    local function callbackFunc()
+        EM:UnregisterForUpdate(eventUpdateNameCraft)
+
+        --Check if we are still at a craft table, bank, vendor, fishing or crouching and if this is enabled in settings
+        --to unsumon the companion: We do not need to re-summon it then
+        local isCompanionUnsummonTaskDone = isStillAtChecks()
+d(">callbackFunc - setupCraftEndTimerCallback. isStillCrafting: " ..tostring(isCompanionUnsummonTaskDone))
+        if isCompanionUnsummonTaskDone == true then return end
+
+        --Re-Summon the last known companion
+        FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrafting, true, true)
+        lastCompanionIdBeforeCrafting = nil
+        companionWasSummonedBefore = false
+    end
+
+
+    local delay = settings.reSummonAfterCraftingTablesDelay
+    if delay <= 0 then
+        callbackFunc()
+        return
+    end
+
+    EM:RegisterForUpdate(eventUpdateNameCraft, delay, callbackFunc)
+end
+
+
+local function OnCraftingEnded(craftSkill)
+d("OnCraftingEnded")
+    resetIsAtVars()
+    local settings = FCOCompanion.settingsVars.settings
+    if not settings.unSummonAtCraftingTables or not settings.reSummonAfterCraftingTables or lastCompanionIdBeforeCrafting == nil then
+        lastCompanionIdBeforeCrafting = nil
+        return
+    end
+    --Get the last active companion ID (from settings, as it could be despawned by the banker "non-combat collection pet"
+    --before the bank was opened
+    if lastCompanionIdBeforeCrafting == nil then
+        if companionWasSummonedBefore == true and settings.lastCompanionId ~= nil then
+            lastCompanionIdBeforeCrafting = settings.lastCompanionId
+        else
+            return
+        end
+    end
+
+    --Summon the last summoned companion again now -> Start a timer delayed via the settings slider "delay re-summon after fish"
+    setupCraftEndTimerCallback()
+end
+
+
+function FCOCompanion.CraftingTableInteractEnd(eventId, craftSkill)
+d("[FCOCompanion]CraftingTableInteract END - lastCompanionIdBeforeCrafting: " ..tostring(lastCompanionIdBeforeCrafting))
+    --[[
+    local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtCraftingTables or not settings.reSummonAfterCraftingTables or lastCompanionIdBeforeCrafting == nil then
         lastCompanionIdBeforeCrafting = nil
         return
@@ -127,20 +276,27 @@ function FCOCompanion.CraftingTableInteractEnd(eventId, craftSkill)
     FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrafting, true, true)
     lastCompanionIdBeforeCrafting = nil
     companionWasSummonedBefore = false
+    ]]
+    EM:UnregisterForEvent(addonName, EVENT_END_CRAFTING_STATION_INTERACT)
+    OnCraftingEnded(craftSkill)
 end
 
 
 --======================================================================================================================
 -- BANK
 --======================================================================================================================
-local lastCompanionIdBeforeBank
-function FCOCompanion.BankInteract(eventId, bankBagId)
---d("[FCOCompanion]BankInteract BEGIN")
+function FCOCompanion.BankInteract(eventId, bankBagId, isGuildBankBag)
+d("[FCOCompanion]BankInteract BEGIN")
+    isCurrentlyAtBank = true
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtBanks then
         lastCompanionIdBeforeBank = nil
         return
     end
+    isGuildBankBag = isGuildBankBag or ((bankBagId == BAG_GUILDBANK) or false)
+    local eventIdForBankClose = isGuildBankBag and EVENT_CLOSE_GUILD_BANK or EVENT_CLOSE_BANK
+    EM:RegisterForEvent(addonName, eventIdForBankClose, function() FCOCompanion.BankInteractEnd(eventIdForBankClose, isGuildBankBag) end)
+
     --Unsummon the companion if summoned
     local isPending, isActive = checkForActiveCompanion()
     if actualCompanionDefId ~= nil then
@@ -154,11 +310,12 @@ function FCOCompanion.BankInteract(eventId, bankBagId)
         elseif isPending then
             companionWasSummonedBefore = true
             EM:RegisterForEvent(addonVars.addonName .. "_Bank", EVENT_COMPANION_ACTIVATED, function()
---d(">companion summon finished after bank was opened")
+d(">companion summon finished after bank was opened")
                 EM:UnregisterForEvent(addonVars.addonName .. "_Bank", EVENT_COMPANION_ACTIVATED)
-                --Check if we are still at a bank
-                if not IsBankOpen() and not IsGuildBankOpen() then
---d("<<not at bank anymore!")
+                --Check if we are not doing something that will unsummon the companion
+                if not isStillAtChecks() then
+d("<<not at bank anymore!")
+                    resetIsAtVars()
                     lastCompanionIdBeforeBank = nil
                     return
                 end
@@ -172,9 +329,74 @@ function FCOCompanion.BankInteract(eventId, bankBagId)
     end
 end
 
-function FCOCompanion.BankInteractEnd(eventId)
+local function setupBankEndTimerCallback()
+d("setupBankEndTimerCallback")
+    local eventUpdateNameBank = addonName .. "_ReSummon"
+    EM:UnregisterForUpdate(eventUpdateNameBank)
+
+    if lastCompanionIdBeforeBank == nil or companionWasSummonedBefore == false then
+d(">abort bank end timer 1")
+        return
+    end
     local settings = FCOCompanion.settingsVars.settings
---d("[FCOCompanion]BankInteract END - lastCompanionIdBeforeBank: " ..tostring(lastCompanionIdBeforeBank))
+    if not settings.reSummonAfterBanks then return end
+
+    local function callbackFunc()
+        EM:UnregisterForUpdate(eventUpdateNameBank)
+
+        --Check if we are still at a craft table, bank, vendor, fishing or crouching and if this is enabled in settings
+        --to unsumon the companion: We do not need to re-summon it then
+        local isCompanionUnsummonTaskDone = isStillAtChecks()
+d(">callbackFunc - setupBankEndTimerCallback. isStillAtABank: " ..tostring(isCompanionUnsummonTaskDone))
+        if isCompanionUnsummonTaskDone then return true end
+
+        --Re-Summon the last known companion
+        FCOCompanion.ToggleCompanion(lastCompanionIdBeforeBank, true, true)
+        lastCompanionIdBeforeBank = nil
+        companionWasSummonedBefore = false
+    end
+
+
+    local delay = settings.reSummonAfterBanksDelay
+    if delay <= 0 then
+        callbackFunc()
+        return
+    end
+
+    EM:RegisterForUpdate(eventUpdateNameBank, delay, callbackFunc)
+end
+
+
+GetJournalQuestName()
+
+local function OnBankEnded()
+d("OnBankEnded")
+    isCurrentlyAtBank = false
+    local settings = FCOCompanion.settingsVars.settings
+    if not settings.unSummonAtBanks or not settings.reSummonAfterBanks or lastCompanionIdBeforeBank == nil then
+        lastCompanionIdBeforeBank = nil
+d(">abort bank1")
+        return
+    end
+    --Get the last active companion ID (from settings, as it could be despawned by the banker "non-combat collection pet"
+    --before the bank was opened
+    if lastCompanionIdBeforeBank == nil then
+        if companionWasSummonedBefore == true and settings.lastCompanionId ~= nil then
+            lastCompanionIdBeforeBank = settings.lastCompanionId
+        else
+d(">abort bank2")
+            return
+        end
+    end
+
+    --Summon the last summoned companion again now -> Start a timer delayed via the settings slider "delay re-summon after fish"
+    setupBankEndTimerCallback()
+end
+
+function FCOCompanion.BankInteractEnd(eventId, isGuildBankBag)
+d("[FCOCompanion]BankInteract END - lastCompanionIdBeforeBank: " ..tostring(lastCompanionIdBeforeBank))
+    --[[
+    local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtBanks or not settings.reSummonAfterBanks then
         lastCompanionIdBeforeBank = nil
         return
@@ -193,20 +415,26 @@ function FCOCompanion.BankInteractEnd(eventId)
     FCOCompanion.ToggleCompanion(lastCompanionIdBeforeBank, true, true)
     lastCompanionIdBeforeBank = nil
     companionWasSummonedBefore = false
+    ]]
+    local eventIdForBankClose = isGuildBankBag and EVENT_CLOSE_GUILD_BANK or EVENT_CLOSE_BANK
+    EM:UnregisterForEvent(addonName, eventIdForBankClose)
+    OnBankEnded()
 end
 
 
 --======================================================================================================================
 -- VENDOR
 --======================================================================================================================
-local lastCompanionIdBeforeVendor
 function FCOCompanion.VendorInteract(eventId, allowSell, allowLaunder)
---d("[FCOCompanion]VendorInteract BEGIN")
+d("[FCOCompanion]VendorInteract BEGIN")
+    isCurrentlyAtVendor = true
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtVendors then
         lastCompanionIdBeforeVendor = nil
         return
     end
+    EM:RegisterForEvent(addonName, EVENT_CLOSE_STORE, FCOCompanion.VendorInteractEnd)
+
     --Unsummon the companion if summoned
     local isPending, isActive = checkForActiveCompanion()
     if actualCompanionDefId ~= nil then
@@ -220,11 +448,12 @@ function FCOCompanion.VendorInteract(eventId, allowSell, allowLaunder)
         elseif isPending then
             companionWasSummonedBefore = true
             EM:RegisterForEvent(addonVars.addonName .. "_Vendor", EVENT_COMPANION_ACTIVATED, function()
---d(">companion summon finished after vendor was opened")
+d(">companion summon finished after vendor was opened")
                 EM:UnregisterForEvent(addonVars.addonName .. "_Vendor", EVENT_COMPANION_ACTIVATED)
-                --Check if we are still at a vendor
-                if not ZO_Store_IsShopping() then
---d("<<not at vendor anymore!")
+                --Check if we are not doing something that will unsummon the companion
+                if not isStillAtChecks() then
+d("<<not at vendor anymore!")
+                    resetIsAtVars()
                     lastCompanionIdBeforeVendor = nil
                     return
                 end
@@ -238,9 +467,67 @@ function FCOCompanion.VendorInteract(eventId, allowSell, allowLaunder)
     end
 end
 
-function FCOCompanion.VendorInteractEnd(eventId)
+local function setupVendorEndTimerCallback()
+d("setupVendorEndTimerCallback")
+    local eventUpdateNameVendor = addonName .. "_ReSummon"
+    EM:UnregisterForUpdate(eventUpdateNameVendor)
+
+    if lastCompanionIdBeforeVendor == nil or companionWasSummonedBefore == false then return end
     local settings = FCOCompanion.settingsVars.settings
---d("[FCOCompanion]VendorInteract END - lastCompanionIdBeforeVendor: " ..tostring(lastCompanionIdBeforeVendor))
+    if not settings.reSummonAfterVendors then return end
+
+    local function callbackFunc()
+        EM:UnregisterForUpdate(eventUpdateNameVendor)
+
+        --Check if we are still at a craft table, bank, vendor, fishing or crouching and if this is enabled in settings
+        --to unsumon the companion: We do not need to re-summon it then
+        local isCompanionUnsummonTaskDone = isStillAtChecks()
+d(">callbackFunc - setupVendorEndTimerCallback. isStillAtAVendor: " ..tostring(isCompanionUnsummonTaskDone))
+        if isCompanionUnsummonTaskDone then return true end
+
+        --Re-Summon the last known companion
+        FCOCompanion.ToggleCompanion(lastCompanionIdBeforeVendor, true, true)
+        lastCompanionIdBeforeVendor = nil
+        companionWasSummonedBefore = false
+    end
+
+
+    local delay = settings.reSummonAfterVendorsDelay
+    if delay <= 0 then
+        callbackFunc()
+        return
+    end
+
+    EM:RegisterForUpdate(eventUpdateNameVendor, delay, callbackFunc)
+end
+
+
+local function OnVendorEnded()
+d("OnVendorEnded")
+    isCurrentlyAtVendor = false
+    local settings = FCOCompanion.settingsVars.settings
+    if not settings.unSummonAtVendors or not settings.reSummonAfterVendors or lastCompanionIdBeforeVendor == nil then
+        lastCompanionIdBeforeVendor = nil
+        return
+    end
+    --Get the last active companion ID (from settings, as it could be despawned by the banker "non-combat collection pet"
+    --before the bank was opened
+    if lastCompanionIdBeforeVendor == nil then
+        if companionWasSummonedBefore == true and settings.lastCompanionId ~= nil then
+            lastCompanionIdBeforeVendor = settings.lastCompanionId
+        else
+            return
+        end
+    end
+
+    --Summon the last summoned companion again now -> Start a timer delayed via the settings slider "delay re-summon after fish"
+    setupVendorEndTimerCallback()
+end
+
+function FCOCompanion.VendorInteractEnd(eventId)
+d("[FCOCompanion]VendorInteract END - lastCompanionIdBeforeVendor: " ..tostring(lastCompanionIdBeforeVendor))
+    --[[
+    local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtVendors or not settings.reSummonAfterVendors then
         lastCompanionIdBeforeVendor = nil
         return
@@ -259,26 +546,23 @@ function FCOCompanion.VendorInteractEnd(eventId)
     FCOCompanion.ToggleCompanion(lastCompanionIdBeforeVendor, true, true)
     lastCompanionIdBeforeVendor = nil
     companionWasSummonedBefore = false
+    ]]
+    EM:UnregisterForEvent(addonName, EVENT_CLOSE_STORE)
+    OnVendorEnded()
 end
 
 
 --======================================================================================================================
 -- FISHING
 --======================================================================================================================
-local lastCompanionIdBeforeFish
 local wasFishing = false
-
-local function isFishing()
-    local isCurrentlyFishing = (GetInteractionType() == INTERACTION_FISH) or false
-    return isCurrentlyFishing
-end
 
 local function OnStartInteraction()
     zo_callLater(function()
 
         wasFishing = false
-        local isCurrentlyFishing = isFishing()
---d("InteractionManager:StartInteraction - isCurrentlyFishing: " ..tostring(isCurrentlyFishing))
+        isFishing()
+d("InteractionManager:StartInteraction - isCurrentlyFishing: " ..tostring(isCurrentlyFishing))
         if not isCurrentlyFishing then return end
 
         wasFishing = true
@@ -309,9 +593,10 @@ local function OnStartInteraction()
                     EM:RegisterForEvent(addonVars.addonName .. "_Fish", EVENT_COMPANION_ACTIVATED, function()
                         --d(">companion summon finished after fishing was started")
                         EM:UnregisterForEvent(addonVars.addonName .. "_Fish", EVENT_COMPANION_ACTIVATED)
-                        --Check if we are still Fishing
-                        if not isFishing() then
+                        --Check if we are not doing something that will unsummon the companion
+                        if not isStillAtChecks() then
                             --d("<<not fishing anymore!")
+                            resetIsAtVars()
                             lastCompanionIdBeforeFish = nil
                             return
                         end
@@ -329,8 +614,8 @@ local function OnStartInteraction()
 end
 
 local function setupFishEndTimerCallback()
---d("setupFishEndTimerCallback")
-    local eventUpdateNameFish = addonName .. "_FishingReSummon"
+d("setupFishEndTimerCallback")
+    local eventUpdateNameFish = addonName .. "_ReSummon"
     EM:UnregisterForUpdate(eventUpdateNameFish)
 
     if lastCompanionIdBeforeFish == nil or companionWasSummonedBefore == false then return end
@@ -340,11 +625,11 @@ local function setupFishEndTimerCallback()
     local function callbackFunc()
         EM:UnregisterForUpdate(eventUpdateNameFish)
 
-        --Check if we are fishing (again) and do not summon the Companion then
-        -->Not possible while fishing as it says "you are busy"
-        local isCurrentlyFishing = isFishing()
---d(">callbackFunc - setupFishEndTimerCallback. isStillFishing: " ..tostring(isCurrentlyFishing))
-        if isCurrentlyFishing == true then return end
+        --Check if we are still at a craft table, bank, vendor, fishing or crouching and if this is enabled in settings
+        --to unsumon the companion: We do not need to re-summon it then
+        local isCompanionUnsummonTaskDone = isStillAtChecks()
+d(">callbackFunc - setupFishEndTimerCallback. isStillFishing: " ..tostring(isCompanionUnsummonTaskDone))
+        if isCompanionUnsummonTaskDone == true then return end
 
         --Re-Summon the last known companion
         FCOCompanion.ToggleCompanion(lastCompanionIdBeforeFish, true, true)
@@ -363,7 +648,7 @@ local function setupFishEndTimerCallback()
 end
 
 local function OnEventInteractionEnded(eventId, interactType, cancelContext)
---d("[FCOCO]OnEventInteractionEnded - interactType: " ..tostring(interactType) .. ", wasFishing: " ..tostring(wasFishing))
+d("[FCOCO]OnEventInteractionEnded - interactType: " ..tostring(interactType) .. ", wasFishing: " ..tostring(wasFishing))
     --InteractType is FISH if you abort fishig or get no loot. It will be LOOT if something was looted
     --Could also happen if something else was looted! Or fishing was ended and after that somethign else was looted
     if interactType == INTERACTION_LOOT then
@@ -396,16 +681,9 @@ end
 --======================================================================================================================
 -- CROUCHING
 --======================================================================================================================
-local lastCompanionIdBeforeCrouch
-
-local function isCrouching()
-    local isCurrentlyCrouching = (currentStealthState ~= STEALTH_STATE_NONE) or false
-    return isCurrentlyCrouching
-end
-
 local function setupCrouchEndTimerCallback()
---d("setupCrouchEndTimerCallback")
-    local eventUpdateNameCrouch = addonName .. "_CrouchingReSummon"
+d("setupCrouchEndTimerCallback")
+    local eventUpdateNameCrouch = addonName .. "_ReSummon"
     EM:UnregisterForUpdate(eventUpdateNameCrouch)
 
     if lastCompanionIdBeforeCrouch == nil or companionWasSummonedBefore == false then return end
@@ -415,11 +693,11 @@ local function setupCrouchEndTimerCallback()
     local function callbackFunc()
         EM:UnregisterForUpdate(eventUpdateNameCrouch)
 
-        --Check if we are fishing (again) and do not summon the Companion then
-        -->Not possible while fishing as it says "you are busy"
-        local isCurrentlyCrouching = isCrouching()
---d(">callbackFunc - setupCrouchEndTimerCallback. isStillCrouching: " ..tostring(isCurrentlyCrouching))
-        if isCurrentlyCrouching == true then return end
+        --Check if we are still at a craft table, bank, vendor, fishing or crouching and if this is enabled in settings
+        --to unsumon the companion: We do not need to re-summon it then
+        local isCompanionUnsummonTaskDone = isStillAtChecks()
+d(">callbackFunc - setupCrouchEndTimerCallback. isStillCrouching: " ..tostring(isCompanionUnsummonTaskDone))
+        if isCompanionUnsummonTaskDone == true then return end
 
         --Re-Summon the last known companion
         FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, true, true)
@@ -439,7 +717,7 @@ end
 
 local function OnCrouchingStart()
     local isInCombat = IsUnitInCombat("player")
---d(">crouching start - isInCombat: " ..tostring(isInCombat))
+d(">crouching start - isInCombat: " ..tostring(isInCombat))
 
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtCrouching then
@@ -460,20 +738,20 @@ local function OnCrouchingStart()
             --Companion is summoning/summoned
             --Save the last summoned ID first
             lastCompanionIdBeforeCrouch = actualCompanionDefId
---d(">unsummon companion: " ..tostring(lastCompanionIdBeforeCrouch))
+d(">unsummon companion: " ..tostring(lastCompanionIdBeforeCrouch))
             --Unsummon it now
             FCOCompanion.ToggleCompanion(lastCompanionIdBeforeCrouch, false, true)
         elseif isPending then
             companionWasSummonedBefore = true
             EM:RegisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED, function()
---d(">companion summon finished after croching was started")
+d(">companion summon finished after croching was started")
                 EM:UnregisterForEvent(addonVars.addonName .. "_Crouch", EVENT_COMPANION_ACTIVATED)
-                --Check if we are crouching again
-                if not isCrouching() then
+                --Check if we are not doing something that will unsummon the companion
+                if not isStillAtChecks() then
                     lastCompanionIdBeforeCrouch = nil
                     return
                 end
---d(">>dismissing now as we are crouching")
+d(">>dismissing now as we are crouching")
                 --Companion is summoning/summoned
                 --Save the last summoned ID first
                 lastCompanionIdBeforeCrouch = actualCompanionDefId
@@ -485,7 +763,7 @@ local function OnCrouchingStart()
 end
 
 local function OnCrouchingEnded()
---d("OnCrouchingEnded")
+d("OnCrouchingEnded")
     local settings = FCOCompanion.settingsVars.settings
     if not settings.unSummonAtCrouching or not settings.reSummonAfterCrouching then
         lastCompanionIdBeforeCrouch = nil
@@ -528,8 +806,8 @@ local function OnStealthStateChanged(eventId, unitTag, newStealthState)
         [STEALTH_STATE_STEALTH_ALMOST_DETECTED] = "STEALTH_STATE_STEALTH_ALMOST_DETECTED",
     }
     local newStealthStateText = stealtStates[newStealthState] or "n/a"
-d("Stealth state - " ..tostring(newStealthState) .." / " ..tostring(newStealthStateText))
 ]]
+d("Stealth state - " ..tostring(newStealthState) .." / " ..tostring(newStealthStateText))
     local stealthStatesToHideCompanion = {
         [STEALTH_STATE_NONE]                    = false,
         [STEALTH_STATE_DETECTED]                = false,
@@ -580,16 +858,12 @@ function FCOCompanion.addonLoaded(eventName, addon)
     EM:RegisterForEvent(addonName, EVENT_COMPANION_DEACTIVATED, FCOCompanion.Companion_DeActivated)
     --Crafting tables
     EM:RegisterForEvent(addonName, EVENT_CRAFTING_STATION_INTERACT, FCOCompanion.CraftingTableInteract)
-    EM:RegisterForEvent(addonName, EVENT_END_CRAFTING_STATION_INTERACT, FCOCompanion.CraftingTableInteractEnd)
     --Banks & Guild Banks
-    EM:RegisterForEvent(addonName, EVENT_OPEN_BANK, FCOCompanion.BankInteract)
-    EM:RegisterForEvent(addonName, EVENT_CLOSE_BANK, FCOCompanion.BankInteractEnd)
-    EM:RegisterForEvent(addonName, EVENT_OPEN_GUILD_BANK, FCOCompanion.BankInteract)
-    EM:RegisterForEvent(addonName, EVENT_CLOSE_GUILD_BANK, FCOCompanion.BankInteractEnd)
+    EM:RegisterForEvent(addonName, EVENT_OPEN_BANK, function(eventId, bankingBagId) FCOCompanion.BankInteract(eventId, bankingBagId) end)
+    EM:RegisterForEvent(addonName, EVENT_OPEN_GUILD_BANK, function(eventId) FCOCompanion.BankInteract(eventId, BAG_GUILDBANK) end)
     --Vendors
     EM:RegisterForEvent(addonName, EVENT_OPEN_STORE, FCOCompanion.VendorInteract)
     EM:RegisterForEvent(addonName, EVENT_OPEN_FENCE, FCOCompanion.VendorInteract)
-    EM:RegisterForEvent(addonName, EVENT_CLOSE_STORE, FCOCompanion.VendorInteractEnd)
     --Collectibles
     EM:RegisterForEvent(addonName, EVENT_COLLECTIBLE_USE_RESULT, onCollectibleUseResult)
     --Fishing End
@@ -608,3 +882,6 @@ end
 --Load the addon
 if not FCOCompanion.isCompanionUnlocked then return end
 FCOCompanion.initialize()
+
+
+

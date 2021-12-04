@@ -17,25 +17,31 @@ local stringsEN = {
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT         = "Hide your active companion if you interact with a crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE         = "Re-summon after crafting table",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_TT      = "Summon your last active companion again after leaving the crafting table",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_DELAY   = "Re-summon delay: Crafting table",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_DELAY_TT= "Delay the re-summoning after ending the bank interaction with this milliseconds value (1000 = 1 second)",
 
     FCOCO_LAM_SETTING_HEADER_BANKS                          = GetString(SI_CURRENCYLOCATION1),
     FCOCO_LAM_SETTING_UNSUMMON_AT_BANK                      = "Dismiss at bank",
     FCOCO_LAM_SETTING_UNSUMMON_AT_BANK_TT                   = "Hide your active companion if you interact with a bank",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK                   = "Re-summon after bank",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_TT                = "Summon your last active companion again after leaving the bank",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_DELAY             = "Re-summon delay: Bank",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_DELAY_TT          = "Delay the re-summoning after ending the bank interaction with this milliseconds value (1000 = 1 second)",
 
     FCOCO_LAM_SETTING_HEADER_VENDORS                        = GetString(SI_MAPDISPLAYFILTER2),
     FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR                    = "Dismiss at vendor/fence",
     FCOCO_LAM_SETTING_UNSUMMON_AT_VENDOR_TT                 = "Hide your active companion if you interact with a vendor/fence",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR                 = "Re-summon after vendor/fence",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_TT              = "Summon your last active companion again after leaving the vendor/fence",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_DELAY           = "Re-summon delay: Vendor/fence",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_DELAY_TT        = "Delay the re-summoning after ending the vendor interaction with this milliseconds value (1000 = 1 second)",
 
     FCOCO_LAM_SETTING_HEADER_FISHING                        = GetString(SI_GUILDACTIVITYATTRIBUTEVALUE9),
     FCOCO_LAM_SETTING_UNSUMMON_AT_FISHING                   = "Dismiss at Fish hole",
     FCOCO_LAM_SETTING_UNSUMMON_AT_FISHING_TT                = "Hide your active companion if you interact with a fish hole",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING                = "Re-summon after fishing",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_TT             = "Summon your last active companion again after leaving the fish hole.\n\'Leaving the fish hole\' means at the end of a fishing attempt, after the delay of milliseconds you setup below. If a new fishing attempt is started before the delay was met, the re-summon will be aborted.",
-    FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_DELAY          = "Re-summon delay after fishing",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_DELAY          = "Re-summon delay: Fishing",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_FISHING_DELAY_TT       = "Delay the re-summoning after ending the fishing hole interaction with this milliseconds value (1000 = 1 second)",
 
     FCOCO_LAM_SETTING_HEADER_CROUCH                         = GetString(SI_BINDING_NAME_SPECIAL_MOVE_CROUCH),
@@ -45,13 +51,16 @@ local stringsEN = {
     FCOCO_LAM_SETTING_UNSUMMON_AT_CROUCHING_NO_COMBAT_TT    = "Only hide the companion if you are not in combat, as you start to crouch",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING              = "Re-summon after crouching",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_TT           = "Summon your last active companion again after leaving the crouched state.\n\'Leaving the crouched state\' means as you get unhidden or stop to crouch the delay of milliseconds you setup below will be waited until the re-summon takes place. If you start to crouch again before the delay was met, the re-summon will be aborted.",
-    FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_DELAY        = "Re-summon delay after crouching",
+    FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_DELAY        = "Re-summon delay: Crouching",
     FCOCO_LAM_SETTING_RESUMMON_AFTER_CROUCHING_DELAY_TT     = "Delay the re-summoning after end of crouching with this milliseconds value (1000 = 1 second)",
 
-    
     FCOCO_LAM_SETTING_HEADER_COMPASS                        = GetString(SI_CUSTOMERSERVICESUBMITFEEDBACKSUBCATEGORIES1304),
     FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS                = "Disable pin at compass",
     FCOCO_LAM_SETTING_DISABLE_PIN_AT_COMPASS_TT             = "Disable the companion's pin at the compass",
+
+    FCOCO_LAM_SETTING_HEADER_SKILLS                         = GetString(SI_WINDOW_TITLE_SKILLS),
+    FCOCO_LAM_SETTING_HIDE_ULTIMATE_BUTTON                  = "Hide ultimate button",
+    FCOCO_LAM_SETTING_HIDE_ULTIMATE_BUTTON_TT               = "Hide the companions ultimate button and frame + keybind info at the normal UI. I will still be shown at the companion's skill section.",
 }
 
 for stringId, stringValue in pairs(stringsEN) do

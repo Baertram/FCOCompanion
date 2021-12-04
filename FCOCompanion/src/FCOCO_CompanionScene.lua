@@ -126,7 +126,7 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
             --Is the shown one already the one to show? Abort then
             if companionIdToShow ~= nil and companionId == companionIdToShow then
                 if not companionIsActive and onlyIfLastCompanionWasKnown == true then
-                    --Coming from crafting table interaction END event
+                    --Coming from crafting table interaction END event e.g.
                     companionId = companionIdToShow
                 else
                     return
@@ -139,7 +139,7 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
         end
     end
 
---d(string.format("FCOCO]toggleCompanion - companionIsActive: %s, companionIsOnTheWay: %s, companionId: %s, companionIdToShow: %s, doShow: %s, doSummonOtherCompanionAfterwards: %s", tostring(companionIsActive), tostring(companionIsOnTheWay), tostring(companionId), tostring(companionIdToShow), tostring(doShow), tostring(doSummonOtherCompanion)))
+d(string.format("FCOCO]toggleCompanion - companionIsActive: %s, companionIsOnTheWay: %s, companionId: %s, companionIdToShow: %s, doShow: %s, doSummonOtherCompanionAfterwards: %s", tostring(companionIsActive), tostring(companionIsOnTheWay), tostring(companionId), tostring(companionIdToShow), tostring(doShow), tostring(doSummonOtherCompanion)))
 
     --Companion was called: Abort here and let it arrive first!
     if not companionId then return end
@@ -163,7 +163,7 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
         --Hide the collectible
         doUseNow = true
     end
---d(">collectibleIde: " .. tostring(companionCollectibleId) .. ", doUseNow: " ..tostring(doUseNow))
+d(">collectibleIde: " .. tostring(companionCollectibleId) .. ", doUseNow: " ..tostring(doUseNow))
 
     if doUseNow == true then
 
@@ -172,14 +172,20 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
         local collectibleBlockReason = GetCollectibleBlockReason(companionCollectibleId)
         local collectableCooldownLeft = GetCollectibleCooldownAndDuration(companionCollectibleId)
 
---d(">Collectible usable: " ..tostring(isCollectibleUsable) .. ", blocked: " ..tostring(isCollectibleBlocked) .. ", blockReason: " ..tostring(collectibleBlockReason) .. ", cdLeft: " ..tostring(collectableCooldownLeft))
+d(">Collectible usable: " ..tostring(isCollectibleUsable) .. ", blocked: " ..tostring(isCollectibleBlocked) .. ", blockReason: " ..tostring(collectibleBlockReason) .. ", cdLeft: " ..tostring(collectableCooldownLeft))
+
+--TODO: Why is the cooldown sometimes saying 0 but the game bringts the alert "collectible not usable yet!"?
+--TODO variables then are: isCollectibleUsable: true, isCollectibleBlocked: false, collectableCooldownLeft = 0 ????
+--TODO: use RegisterForUpdate and try again and unregister if anything says o unsummon companion then!
+
         local delay = 0
         if isCollectibleUsable == true then
-            if not isCollectibleBlocked or (isCollectibleBlocked and collectibleBlockReason == COLLECTIBLE_USAGE_BLOCK_REASON_NOT_BLOCKED) then
+            if not isCollectibleBlocked or
+                  (isCollectibleBlocked and (collectibleBlockReason == COLLECTIBLE_USAGE_BLOCK_REASON_NOT_BLOCKED or collectibleBlockReason == COLLECTIBLE_USAGE_BLOCK_REASON_ON_COOLDOWN)) then
                 if collectableCooldownLeft ~= nil and collectableCooldownLeft > 0 then --and doShow == true then
-                --Collectible is on cooldown. Delay the call to the summon/dismiss process by the cooldown left
-                delay = collectableCooldownLeft
-            end
+                    --Collectible is on cooldown. Delay the call to the summon/dismiss process by the cooldown left
+                    delay = collectableCooldownLeft
+                end
             else
                 --Collectible blocked
                 return
@@ -191,7 +197,7 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
 
         --Use the companion collectibleId, delayed if any cooldown left
         zo_callLater(function()
---d("!!! Using collectible: companionCollectibleId !!! - Delayed: " ..tostring(delay))
+d("!!! Using collectible: companionCollectibleId !!! - Delayed: " ..tostring(delay))
             UseCollectible(companionCollectibleId)
         end, delay)
     end

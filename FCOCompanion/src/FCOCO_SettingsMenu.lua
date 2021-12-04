@@ -84,6 +84,20 @@ function FCOCompanion.buildAddonMenu()
             disabled = function() return not settings.unSummonAtCraftingTables end,
             width="full",
         },
+        {
+            type = "slider",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_DELAY),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_CRAFTING_TABLE_DELAY_TT),
+            getFunc = function() return settings.reSummonAfterCraftingTablesDelay end,
+            setFunc = function(value) settings.reSummonAfterCraftingTablesDelay = value
+            end,
+            min = 0,
+            max = 60000,
+            step = 1000,
+            default = defaults.reSummonAfterCraftingTablesDelay,
+            disabled = function() return not settings.unSummonAtCraftingTables or not settings.reSummonAfterCraftingTables end,
+            width="full",
+        },
         --==============================================================================
         {
             type = 'header',
@@ -110,6 +124,20 @@ function FCOCompanion.buildAddonMenu()
             disabled = function() return not settings.unSummonAtBanks end,
             width="full",
         },
+        {
+            type = "slider",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_DELAY),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_BANK_DELAY_TT),
+            getFunc = function() return settings.reSummonAfterBanksDelay end,
+            setFunc = function(value) settings.reSummonAfterBanksDelay = value
+            end,
+            min = 0,
+            max = 60000,
+            step = 1000,
+            default = defaults.reSummonAfterBanksDelay,
+            disabled = function() return not settings.unSummonAtBanks or not settings.reSummonAfterBanks end,
+            width="full",
+        },
         --==============================================================================
         {
             type = 'header',
@@ -134,6 +162,20 @@ function FCOCompanion.buildAddonMenu()
             end,
             default = defaults.reSummonAfterVendors,
             disabled = function() return not settings.unSummonAtVendors end,
+            width="full",
+        },
+        {
+            type = "slider",
+            name = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_DELAY),
+            tooltip = GetString(FCOCO_LAM_SETTING_RESUMMON_AFTER_VENDOR_DELAY_TT),
+            getFunc = function() return settings.reSummonAfterVendorsDelay end,
+            setFunc = function(value) settings.reSummonAfterVendorsDelay = value
+            end,
+            min = 0,
+            max = 60000,
+            step = 1000,
+            default = defaults.reSummonAfterVendorsDelay,
+            disabled = function() return not settings.unSummonAtVendors or not settings.reSummonAfterVendors end,
             width="full",
         },
         --==============================================================================
@@ -244,8 +286,25 @@ function FCOCompanion.buildAddonMenu()
             default = defaults.disableCompanionAtCompass,
             width="full",
         },
-
-
+        --===============================================================================
+--[[
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_SKILLS),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_HIDE_ULTIMATE_BUTTON),
+            tooltip = GetString(FCOCO_LAM_SETTING_HIDE_ULTIMATE_BUTTON_TT),
+            getFunc = function() return settings.hideCompanionUltimate end,
+            setFunc = function(value)
+                settings.hideCompanionUltimate = value
+                FCOCompanion.SetupCompanionUltimateButton()
+            end,
+            default = defaults.hideCompanionUltimate,
+            width="full",
+        },
+]]
     } -- optionsTable
     -- END OF OPTIONS TABLE
     --[[
