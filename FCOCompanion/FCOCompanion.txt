@@ -1,21 +1,21 @@
 ## Title: |c00FF00FCO |cFFFF00Companion|r
 ## Author: Baertram
-## Version: 0.1.1
-## AddOnVersion: 001010
-## APIVersion: 101031
+## Version: 0.1.2
+## AddOnVersion: 001020
+## APIVersion: 101033 101034
 ## Description: Change a few parts of the standard game UI
 ## SavedVariables: FCOCompanion_Settings
-## DependsOn: LibAddonMenu-2.0>=32
+## DependsOn: LibAddonMenu-2.0>=33
 
 ## Libraries
 ## Not included, please check the addon description and install them as standalone libraries!
 
+## Addon base values
+FCOCompanion_Constants.lua
+
 ## Translations
 lang/en.lua
 lang/$(language).lua
-
-## Addon base values
-FCOCompanion_Constants.lua
 
 ## Functions
 

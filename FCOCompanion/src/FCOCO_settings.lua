@@ -31,13 +31,10 @@ function FCOCompanion.getSettings()
         lastCompanionId                     = 1, --Bastian Helix, companionDefId 1
         unSummonAtCraftingTables            = true,
         reSummonAfterCraftingTables         = true,
-        reSummonAfterCraftingTablesDelay    = 5000,
         unSummonAtBanks                     = false,
         reSummonAfterBanks                  = false,
-        reSummonAfterBanksDelay             = 5000,
         unSummonAtVendors                   = false,
         reSummonAfterVendors                = false,
-        reSummonAfterVendorsDelay           = 5000,
         unSummonAtFishing                   = false,
         reSummonAfterFishing                = false,
         reSummonAfterFishingDelay           = 5000,

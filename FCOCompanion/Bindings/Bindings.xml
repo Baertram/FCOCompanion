@@ -25,6 +25,18 @@
                     FCOCO.ToggleCompanion(2, nil)
                 </Down>
             </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_3">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(3, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_4">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(4, nil)
+                </Down>
+            </Action>
         </Category>
     </Layer>
 </Bindings>

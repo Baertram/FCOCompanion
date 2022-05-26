@@ -5,7 +5,7 @@ local FCOCompanion = FCOCO
 --[Addon variables]
 FCOCompanion.addonVars = {}
 local addonVars = FCOCompanion.addonVars
-addonVars.addonVersion		        = 0.11
+addonVars.addonVersion		        = 0.12
 addonVars.addonSavedVarsVersion	    = "0.04"
 addonVars.addonSavedVarsForAllTable = "SettingsForAll"
 addonVars.addonSavedVarsNormalTable = "Settings"
@@ -47,13 +47,24 @@ FCOCompanion.playerActivatedDone = false
 
 --Companion Ids and collectibleIds
 local companionInfo = {
+--[[
     [1] = 9245,     -- Bastian Helix, companionDefId 1,
     [2] = 9353,     -- Mirri Elendis, companionDefId 2,
+    [5] = 9911,     -- Funke, companionDefId 5,
+    [6] = 9912,     -- Isobel, companionDefId 6,
+]]
 }
+--Dynamic companion count, up to 10
+for i=1, 10, 1 do
+    local companionCollectibleId = GetCompanionCollectibleId(i)
+    if companionCollectibleId and companionCollectibleId > 0 then
+        companionInfo[i] = companionCollectibleId
+    end
+end
 FCOCompanion.companionInfo = companionInfo
 FCOCompanion.isCompanionUnlocked = false
 
-for _, companionCollectibleId in ipairs(companionInfo) do
+for _, companionCollectibleId in pairs(companionInfo) do
     if IsCollectibleUnlocked(companionCollectibleId) then
         FCOCompanion.isCompanionUnlocked = true
         break
