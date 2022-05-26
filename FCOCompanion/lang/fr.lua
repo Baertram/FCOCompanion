@@ -10,8 +10,14 @@ local stringsFR = {
     --LAM Settings
 }
 
-for i=1, 10, 1 do
-    stringsFR["FCOCO_TOGGLE_COMPANION_" .. tostring(i)]     = companionKeybindBaseStr .. " " .. tostring(i)
+local companionInfo = FCOCO.companionInfo
+for companionDefId, companionCollectibleId in pairs(companionInfo) do
+    --local companionCollectibleId = GetCompanionCollectibleId(companionDefId)
+    if companionCollectibleId ~= nil then
+        local companionName = GetCollectibleName(companionCollectibleId)
+        local companionNameClean = ZO_CachedStrFormat(SI_UNIT_NAME, companionName)
+        stringsFR["FCOCO_TOGGLE_COMPANION_" .. tostring(companionDefId)]     = companionKeybindBaseStr .. ": \'" .. companionNameClean .. "\'"
+    end
 end
 
 

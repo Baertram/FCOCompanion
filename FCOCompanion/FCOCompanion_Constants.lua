@@ -54,7 +54,7 @@ local companionInfo = {
     [6] = 9912,     -- Isobel, companionDefId 6,
 ]]
 }
---Dynamic companion count, up to 10
+--Dynamic companion count, up to 20
 for i=1, 10, 1 do
     local companionCollectibleId = GetCompanionCollectibleId(i)
     if companionCollectibleId and companionCollectibleId > 0 then

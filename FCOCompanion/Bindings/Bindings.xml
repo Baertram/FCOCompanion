@@ -37,6 +37,42 @@
                     FCOCO.ToggleCompanion(4, nil)
                 </Down>
             </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_5">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(5, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_6">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(6, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_7">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(7, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_8">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(8, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_9">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(9, nil)
+                </Down>
+            </Action>
+            <Action name="FCOCO_TOGGLE_COMPANION_10">
+                <Down>
+                    if not FCOCO.isCompanionUnlocked then return end
+                    FCOCO.ToggleCompanion(10, nil)
+                </Down>
+            </Action>
         </Category>
     </Layer>
 </Bindings>
