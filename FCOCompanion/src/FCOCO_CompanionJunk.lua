@@ -8,8 +8,8 @@ local function enableJunkCheck()
     if not LibCustomMenu then return end
     local LCM = LibCustomMenu
 
-    local settings = FCOCompanion.settingsVars.settings
-    local isCompanionJunkEnabled = settings.enableCompanionItemJunk
+    local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
+    local isCompanionJunkEnabled = settingsPerToon.enableCompanionItemJunk
     --Is companion junk enabled?
     if not isCompanionJunkEnabled then return end
 
@@ -55,7 +55,7 @@ local function enableJunkCheck()
         LCM:RegisterContextMenu(AddItem, LibCustomMenu.CATEGORY_PRIMARY)
     ]]
 
-    ---Prehook functions needed like SetItemIsJunk and CanItemBeMarkedAsJunk and IsItemJunk to check table settings.companionItemsJunked too
+    ---Prehook functions needed like SetItemIsJunk and CanItemBeMarkedAsJunk and IsItemJunk to check table settingsPerToon.companionItemsJunked too
 
     --[[
     local function MarkAsJunkHelper(bag, index, isJunk)
@@ -112,7 +112,7 @@ local function enableJunkCheck()
     ]]
 
     --The table with the junkes companion items
-    local junkedCompanionItems = FCOCompanion.settingsVars.settings.companionItemsJunked
+    local junkedCompanionItems = FCOCompanion.settingsVars.settingsPerToon.companionItemsJunked
     local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
 
     local function companionItemChecks(bagId, slotIndex, isCompanionItem)
@@ -293,5 +293,92 @@ local function enableJunkCheck()
         return true
     end)
     ]]
+
+
+    --Companion equipment
+    local wasCompanionEquipmentJunkTabMainMenuAdded = false
+    local compEquip         = COMPANION_EQUIPMENT_KEYBOARD
+
+    local FILTER_KEYS =
+    {
+        ITEM_TYPE_DISPLAY_CATEGORY_JUNK, ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY, ITEM_TYPE_DISPLAY_CATEGORY_ARMOR, ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS, ITEM_TYPE_DISPLAY_CATEGORY_ALL,
+    }
+    local SEARCH_FILTER_KEYS =
+        {
+            [ITEM_TYPE_DISPLAY_CATEGORY_ALL] =
+            {
+                ITEM_TYPE_DISPLAY_CATEGORY_ALL,
+            },
+            [ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS] =
+            {
+                EQUIPMENT_FILTER_TYPE_RESTO_STAFF, EQUIPMENT_FILTER_TYPE_DESTRO_STAFF, EQUIPMENT_FILTER_TYPE_BOW,
+                EQUIPMENT_FILTER_TYPE_TWO_HANDED, EQUIPMENT_FILTER_TYPE_ONE_HANDED, EQUIPMENT_FILTER_TYPE_NONE,
+            },
+            [ITEM_TYPE_DISPLAY_CATEGORY_ARMOR] =
+            {
+                EQUIPMENT_FILTER_TYPE_SHIELD, EQUIPMENT_FILTER_TYPE_HEAVY, EQUIPMENT_FILTER_TYPE_MEDIUM,
+                EQUIPMENT_FILTER_TYPE_LIGHT, EQUIPMENT_FILTER_TYPE_NONE,
+            },
+            [ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY] =
+            {
+                EQUIPMENT_FILTER_TYPE_RING, EQUIPMENT_FILTER_TYPE_NECK, EQUIPMENT_FILTER_TYPE_NONE,
+            },
+            [ITEM_TYPE_DISPLAY_CATEGORY_JUNK] =
+            {
+                EQUIPMENT_FILTER_TYPE_NONE,
+            },
+        }
+
+    local IS_SUB_FILTER = true
+    local function GetSearchFilters(searchFilterKeys)
+        local searchFilters = {}
+        for filterId, subFilters in pairs(searchFilterKeys) do
+            searchFilters[filterId] = {}
+
+            local searchFilterAtId = searchFilters[filterId]
+            for _, subfilterKey in ipairs(subFilters) do
+                local filterData = ZO_ItemFilterUtils.GetSearchFilterData(filterId, subfilterKey)
+                local filter = compEquip:CreateNewTabFilterData(filterData.filterType, filterData.filterString, filterData.icons.up, filterData.icons.down, filterData.icons.over, IS_SUB_FILTER)
+                table.insert(searchFilterAtId, filter)
+            end
+        end
+
+        return searchFilters
+    end
+
+    local function addJunkFilterTab(control)
+        --Clear the menu tabs
+        local tabs = control:GetNamedChild("Tabs")
+        if tabs ~= nil then
+            tabs.m_object:ClearButtons()
+
+            --Reset the filters & subFilters
+            compEquip.filters = {}
+            compEquip.subFilters = {}
+
+            --Rebuild the filetrs and add the tab buttons
+            for _, key in ipairs(FILTER_KEYS) do
+                local filterData = ZO_ItemFilterUtils.GetItemTypeDisplayCategoryFilterDisplayInfo(key)
+                local filter = compEquip:CreateNewTabFilterData(filterData.filterType, filterData.filterString, filterData.icons.up, filterData.icons.down, filterData.icons.over)
+                filter.control = ZO_MenuBar_AddButton(compEquip.tabs, filter)
+                table.insert(compEquip.filters, filter)
+            end
+            --Rebuild the subfilters
+            compEquip.subFilters = GetSearchFilters(SEARCH_FILTER_KEYS, INVENTORY_BACKPACK)
+
+            wasCompanionEquipmentJunkTabMainMenuAdded = true
+        end
+    end
+
+
+    COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
+--d("[COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT]State: " ..tostring(newState))
+        if newState == SCENE_FRAGMENT_SHOWN then
+            if wasCompanionEquipmentJunkTabMainMenuAdded == false then
+--d(">adding main menu bar \'Junk\' tab")
+                addJunkFilterTab(ZO_CompanionEquipment_Panel_Keyboard)
+            end
+        end
+    end)
 end
 FCOCompanion.EnableJunkCheck = enableJunkCheck

@@ -15,6 +15,8 @@ function FCOCompanion.buildAddonMenu()
     local settings = FCOCompanion.settingsVars.settings
     if not settings or not LAM2 then return false end
     local defaults = FCOCompanion.settingsVars.defaults
+    local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
+    local defaultsPerToon = FCOCompanion.settingsVars.defaultsPerToon
     local addonName = addonVars.addonName
 
 
@@ -68,10 +70,10 @@ function FCOCompanion.buildAddonMenu()
             type = "checkbox",
             name = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK),
             tooltip = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK_TT),
-            getFunc = function() return settings.enableCompanionItemJunk end,
-            setFunc = function(value) settings.enableCompanionItemJunk = value
+            getFunc = function() return settingsPerToon.enableCompanionItemJunk end,
+            setFunc = function(value) settingsPerToon.enableCompanionItemJunk = value
             end,
-            default = defaults.enableCompanionItemJunk,
+            default = defaultsPerToon.enableCompanionItemJunk,
             width="full",
             disabled = function() return LibCustomMenu == nil end,
             requiresReload = true,

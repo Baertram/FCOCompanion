@@ -7,12 +7,14 @@ FCOCompanion.addonVars = {}
 local addonVars = FCOCompanion.addonVars
 addonVars.addonVersion		        = 0.13
 addonVars.addonSavedVarsVersion	    = "0.04"
+addonVars.addonSavedVarsVersionPerToon = "0.01"
 addonVars.addonSavedVarsForAllTable = "SettingsForAll"
 addonVars.addonSavedVarsNormalTable = "Settings"
 addonVars.addonName				    = "FCOCompanion"
 addonVars.addonNameMenu  		    = "FCO Companion"
 addonVars.addonNameMenuDisplay	    = "|c00FF00FCO |cFFFF00 Companion|r"
 addonVars.addonSavedVariablesName   = "FCOCompanion_Settings"
+addonVars.addonSavedVariablesNamePerToon = "FCOCompanion_Settings_PerToon"
 addonVars.settingsName   		    = "FCO Companion"
 addonVars.addonAuthor			    = "Baertram"
 addonVars.addonWebsite              = "https://www.esoui.com/downloads/info3044-FCOCompanion.html"
@@ -28,7 +30,9 @@ FCOCompanion.LAM = LibAddonMenu2
 FCOCompanion.settingsVars = {}
 FCOCompanion.settingsVars.defaultSettings = {}
 FCOCompanion.settingsVars.settings = {}
+FCOCompanion.settingsVars.settingsPerToon = {}
 FCOCompanion.settingsVars.defaults = {}
+FCOCompanion.settingsVars.defaultsPerToon = {}
 
 ------------------------------------------------------------------------------------------------------------------------
 --[Controls]

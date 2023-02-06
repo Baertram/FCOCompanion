@@ -13,7 +13,9 @@ local addonVars = FCOCompanion.addonVars
 function FCOCompanion.getSettings()
     local serverName    = GetWorldName()
     local svName        = addonVars.addonSavedVariablesName
+    local svPerToonName = addonVars.addonSavedVariablesNamePerToon
     local svVersion     = addonVars.addonSavedVarsVersion
+    local svVersionPerToon = addonVars.addonSavedVarsVersionPerToon
     local svForAllTable = addonVars.addonSavedVarsForAllTable
     local svNormalTable = addonVars.addonSavedVarsNormalTable
 
@@ -43,11 +45,15 @@ function FCOCompanion.getSettings()
         unSummonAtCrouchingNoCombat         = false,
         reSummonAfterCrouching              = false,
         reSummonAfterCrouchingDelay         = 5000,
-
-        enableCompanionItemJunk             = false,
-        companionItemsJunked                = {},
     }
     FCOCompanion.settingsVars.defaults = defaults
+
+    --Explicity per toon saved settings, e.g. junk items of companions
+    local defaultsPerToon = {
+        enableCompanionItemJunk = false,
+        companionItemsJunked    = {},
+    }
+    FCOCompanion.settingsVars.defaultsPerToon = defaultsPerToon
 
     --=============================================================================================================
     --	LOAD USER SETTINGS
@@ -62,5 +68,7 @@ function FCOCompanion.getSettings()
     else
         FCOCompanion.settingsVars.settings = ZO_SavedVars:NewAccountWide( svName, svVersion, svNormalTable, defaults, serverName )
     end
+    FCOCompanion.settingsVars.settingsPerToon = ZO_SavedVars:NewCharacterIdSettings( svPerToonName, svVersionPerToon , svNormalTable, defaultsPerToon, serverName )
+
     --=============================================================================================================
 end

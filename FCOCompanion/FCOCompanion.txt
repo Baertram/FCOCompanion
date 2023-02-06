@@ -4,7 +4,7 @@
 ## AddOnVersion: 001030
 ## APIVersion: 101036 101037
 ## Description: Change a few parts of the standard game UI
-## SavedVariables: FCOCompanion_Settings
+## SavedVariables: FCOCompanion_Settings FCOCompanion_Settings_PerToon
 ## DependsOn: LibAddonMenu-2.0>=34
 ## OptionalDependsOn: LibCustomMenu>=713
 
