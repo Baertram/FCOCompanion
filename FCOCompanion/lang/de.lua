@@ -16,6 +16,8 @@ local stringsDE = {
     FCOCO_LAM_SETTING_HEADER_JUNK                      = GetString(SI_ITEMTYPEDISPLAYCATEGORY9),
     FCOCO_LAM_SETTING_ENABLE_JUNK                      = "Gefährten Gegenstände->Trödel",
     FCOCO_LAM_SETTING_ENABLE_JUNK_TT                   = "Aktiviere diese Option damit dein Inventar Kontextmenü den \'Markiere als Trödel\' Eintrag bei Gefährten Gegenständen anzeigt. Als Trödel markierte Gefährten Gegenstände werden dann auch auf dem Trödel Inventar Reiter angezeigt.",
+    FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS             = "Auto-Markierung für gleiche Gegenstände im Beutel",
+    FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT          = "Erkennt automatisch, ob der gleiche Gefährten Gegenstand noch einmal in deinem Beutel ist, und markiert/entfernt die Markierung bei diesem genau wie beim aktuell veränderten Gefährten Gegenstand.",
 
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE       = "Wegschicken an Handwerksstationen",
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT    = "Schickt deinen Begleiter an einer Handwerksstation fort, wenn du mit dieser interagierst",

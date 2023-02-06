@@ -78,6 +78,17 @@ function FCOCompanion.buildAddonMenu()
             disabled = function() return LibCustomMenu == nil end,
             requiresReload = true,
         },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS),
+            tooltip = GetString(FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT),
+            getFunc = function() return settingsPerToon.autoJunkMarkSameCompanionItemsInBags end,
+            setFunc = function(value) settingsPerToon.autoJunkMarkSameCompanionItemsInBags = value
+            end,
+            default = defaultsPerToon.autoJunkMarkSameCompanionItemsInBags,
+            width="full",
+            disabled = function() return LibCustomMenu == nil or not settingsPerToon.enableCompanionItemJunk end,
+        },
 
 
         --==============================================================================

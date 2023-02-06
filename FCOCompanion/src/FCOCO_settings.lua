@@ -51,6 +51,7 @@ function FCOCompanion.getSettings()
     --Explicity per toon saved settings, e.g. junk items of companions
     local defaultsPerToon = {
         enableCompanionItemJunk = false,
+        autoJunkMarkSameCompanionItemsInBags = false,
         companionItemsJunked    = {},
     }
     FCOCompanion.settingsVars.defaultsPerToon = defaultsPerToon

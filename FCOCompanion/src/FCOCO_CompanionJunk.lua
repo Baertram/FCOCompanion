@@ -174,8 +174,9 @@ local function enableJunkCheck()
                 --or
                 --Check the junked items for other companion items which use the same itemInstanceId, but another slotIndex,
                 --and which need to be auto-un-junk marked because of this
-
                 --Get cached items of the current bag
+                if not FCOCompanion.settingsVars.settingsPerToon.autoJunkMarkSameCompanionItemsInBags then return end
+
                 local changedItems = 0
                 local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
                 if bagCache ~= nil then
@@ -193,7 +194,7 @@ local function enableJunkCheck()
                                         local iiidStr= zo_getSafeId64Key(itemData.itemStanceId)
                                         --Same item, but other slotIndex?
                                         if iiidStr == itemInstanceId then
---d(">found another item: " .. GetItemLink(bagId, itemData.slotIndex))
+                                            --d(">found another item: " .. GetItemLink(bagId, itemData.slotIndex))
                                             itemData.isJunk = isJunk
                                             --changedItems = changedItems + 1
                                         end
@@ -387,6 +388,23 @@ local function enableJunkCheck()
         if not isMarkedAsJunk then return origFuncRetVar end
 
         --Filetr/hide as it's a junked item
+        return false
+    end)
+
+    --Prevent depositting junk marked companion items to the guild bank
+    -->Will be automatically unjunked, like normal (non companion) items too
+    --ZO_PreHook the TransferToGuildBank(sourceBag, sourceSlot) function
+    ZO_PreHook("TransferToGuildBank", function(sourceBag, sourceSlot)
+        if GetSelectedGuildBankId() then
+d("[TransferToGuildBank]guildBankId: " ..tostring(GetSelectedGuildBankId()))
+            local isCompanionItem, itemInstanceId = companionItemChecks(sourceBag, sourceSlot, nil)
+            if isCompanionItem and itemInstanceId ~= nil then
+                if not junkedCompanionItems[itemInstanceId] then return false end
+                --UnJunk the companion item
+d("<unjunked item: " ..GetItemLink(sourceBag, sourceSlot))
+                junkedCompanionItems[itemInstanceId] = nil
+            end
+        end
         return false
     end)
 end

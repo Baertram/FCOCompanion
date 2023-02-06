@@ -15,6 +15,8 @@ local stringsEN = {
     FCOCO_LAM_SETTING_HEADER_JUNK                           = GetString(SI_ITEMTYPEDISPLAYCATEGORY9),
     FCOCO_LAM_SETTING_ENABLE_JUNK                           = "Companion items->junk",
     FCOCO_LAM_SETTING_ENABLE_JUNK_TT                        = "Enable this to add the contextmenu entry \'Add to junk\' to companion items. If marked as junk they will be shown at the Junk tab in your inventory then.",
+    FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS                  = "Auto-mark same items in bags",
+    FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT               = "Automatially detect if you got the same companion item, that you currently mark/unmark as junk, multiple times in your same bag, and apply/remove the junk mark on these too.",
 
     FCOCO_LAM_SETTING_HEADER_CRAFTING                       = GetString(SI_SKILLTYPE8),
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE            = "Dismiss at crafting table",
