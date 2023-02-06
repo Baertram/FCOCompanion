@@ -396,12 +396,12 @@ local function enableJunkCheck()
     --ZO_PreHook the TransferToGuildBank(sourceBag, sourceSlot) function
     ZO_PreHook("TransferToGuildBank", function(sourceBag, sourceSlot)
         if GetSelectedGuildBankId() then
-d("[TransferToGuildBank]guildBankId: " ..tostring(GetSelectedGuildBankId()))
+--d("[TransferToGuildBank]guildBankId: " ..tostring(GetSelectedGuildBankId()))
             local isCompanionItem, itemInstanceId = companionItemChecks(sourceBag, sourceSlot, nil)
             if isCompanionItem and itemInstanceId ~= nil then
                 if not junkedCompanionItems[itemInstanceId] then return false end
                 --UnJunk the companion item
-d("<unjunked item: " ..GetItemLink(sourceBag, sourceSlot))
+--d("<unjunked item: " ..GetItemLink(sourceBag, sourceSlot))
                 junkedCompanionItems[itemInstanceId] = nil
             end
         end
