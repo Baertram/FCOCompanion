@@ -211,8 +211,8 @@ local function enableJunkCheck()
             local invSlotParent = invSlotOfAction:GetParent()
             if invSlotParent ~= nil then
     --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
-                invSlotOfAction.isJunk = true
-                invSlotParent.dataEntry.data.isJunk = true
+                invSlotOfAction.isJunk = isJunk
+                invSlotParent.dataEntry.data.isJunk = isJunk
             end
         end
     end
