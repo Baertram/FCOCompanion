@@ -3,6 +3,16 @@ local FCOCompanion = FCOCO
 if not FCOCompanion.isCompanionUnlocked then return end
 ------------------------------------------------------------------------------------------------------------------------
 
+local wasCompanionEquipmentJunkTabMainMenuAdded = false
+
+local playerInv                     = PLAYER_INVENTORY
+local compEquip                     = COMPANION_EQUIPMENT_KEYBOARD
+local companionEquipmentFragment    = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
+
+local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
+FCOCompanion.preventNextSameBagIdAndSlotIndexUnjunkContextMenu = preventNextSameBagIdAndSlotIndexUnjunkContextMenu
+
+------------------------------------------------------------------------------------------------------------------------
 
 local function enableJunkCheck()
     if not LibCustomMenu then return end
@@ -12,6 +22,11 @@ local function enableJunkCheck()
     local isCompanionJunkEnabled = settingsPerToon.enableCompanionItemJunk
     --Is companion junk enabled?
     if not isCompanionJunkEnabled then return end
+
+
+    playerInv = playerInv or PLAYER_INVENTORY
+    compEquip = compEquip or COMPANION_EQUIPMENT_KEYBOARD
+    companionEquipmentFragment = companionEquipmentFragment or COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
 
     --Add the context menu entry to normal inventory row "Companion items" -> SlotAction mark_as_junk and unmark_as_junk at:
     --https://github.com/esoui/esoui/blob/148bf16c4c457ca9d75e41e7045e59de624b1ae7/esoui/ingame/inventory/inventoryslot.lua#L1809
@@ -113,7 +128,6 @@ local function enableJunkCheck()
 
     --The table with the junkes companion items
     local junkedCompanionItems = FCOCompanion.settingsVars.settingsPerToon.companionItemsJunked
-    local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
 
     local function companionItemChecks(bagId, slotIndex, isCompanionItem)
         if isCompanionItem == nil then
@@ -180,6 +194,7 @@ local function enableJunkCheck()
     end
 
 
+
     local function setCompanionItemJunk(bagId, slotIndex, isJunk)
         local isCompanionItem, itemId = companionItemChecks(bagId, slotIndex)
         --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId) .. ", isJunk: " ..tostring(isJunk))
@@ -196,15 +211,15 @@ local function enableJunkCheck()
     FCOCompanion.SetCompanionItemIsJunk = setCompanionItemJunk
 
 
-    local playerInv     = PLAYER_INVENTORY
-    local compEquip     = COMPANION_EQUIPMENT_KEYBOARD
-    local companionEquipmentFragment = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
 
     --local playerInvListView = playerInv.inventories[BAG_BACKPACK].listView
     local function refreshInventoryToUpdateFilteredSlotData()
+--d("[FCOCompanion]refreshInventoryToUpdateFilteredSlotData")
         local isConpanionInv = (companionEquipmentFragment:IsShowing()) or false
         local invToUpdate = (isConpanionInv and compEquip) or playerInv
-        local invVarToUse = (not isConpanionInv and INVENTORY_BACKPACK) or false
+        local invVarToUse = (not isConpanionInv and INVENTORY_BACKPACK) or nil
+--d(">isConpanionInv: " ..tostring(isConpanionInv) .. ", invToUpdate: " ..tostring(invToUpdate) .. ", invVarToUse: " ..tostring(invVarToUse))
+        if invToUpdate.UpdateList == nil then return end
         invToUpdate:UpdateList(invVarToUse)
         --ZO_ScrollList_RefreshVisible(playerInvListView, nil, nil)
     end
@@ -218,7 +233,14 @@ local function enableJunkCheck()
             if invSlotParent ~= nil then
                 --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
                 invSlotOfAction.isJunk = isJunk
-                invSlotParent.dataEntry.data.isJunk = isJunk
+
+                if invSlotParent.dataEntry ~= nil and invSlotParent.dataEntry.data ~= nil then
+                    if invSlotParent.dataEntry.data.dataSource ~= nil then
+                        invSlotParent.dataEntry.data.dataSource.isJunk = isJunk
+                    else
+                        invSlotParent.dataEntry.data.isJunk = isJunk
+                    end
+                end
             end
         end
     end
@@ -269,6 +291,8 @@ local function enableJunkCheck()
         end
     end
     LCM:RegisterContextMenu(AddItem, LibCustomMenu.CATEGORY_PRIMARY)
+
+
 
 
 
