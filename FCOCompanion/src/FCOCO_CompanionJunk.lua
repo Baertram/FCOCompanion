@@ -196,10 +196,16 @@ local function enableJunkCheck()
     FCOCompanion.SetCompanionItemIsJunk = setCompanionItemJunk
 
 
-    local playerInv = PLAYER_INVENTORY
+    local playerInv     = PLAYER_INVENTORY
+    local compEquip     = COMPANION_EQUIPMENT_KEYBOARD
+    local companionEquipmentFragment = COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT
+
     --local playerInvListView = playerInv.inventories[BAG_BACKPACK].listView
     local function refreshInventoryToUpdateFilteredSlotData()
-        playerInv:UpdateList(INVENTORY_BACKPACK)
+        local isConpanionInv = (companionEquipmentFragment:IsShowing()) or false
+        local invToUpdate = (isConpanionInv and compEquip) or playerInv
+        local invVarToUse = (not isConpanionInv and INVENTORY_BACKPACK) or false
+        invToUpdate:UpdateList(invVarToUse)
         --ZO_ScrollList_RefreshVisible(playerInvListView, nil, nil)
     end
 
@@ -296,9 +302,6 @@ local function enableJunkCheck()
 
 
     --Companion equipment
-    local wasCompanionEquipmentJunkTabMainMenuAdded = false
-    local compEquip         = COMPANION_EQUIPMENT_KEYBOARD
-
     local FILTER_KEYS =
     {
         ITEM_TYPE_DISPLAY_CATEGORY_JUNK, ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY, ITEM_TYPE_DISPLAY_CATEGORY_ARMOR, ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS, ITEM_TYPE_DISPLAY_CATEGORY_ALL,
@@ -365,6 +368,9 @@ local function enableJunkCheck()
             end
             --Rebuild the subfilters
             compEquip.subFilters = GetSearchFilters(SEARCH_FILTER_KEYS, INVENTORY_BACKPACK)
+
+            --Select the first tab
+            ZO_MenuBar_SelectDescriptor(tabs, ITEM_TYPE_DISPLAY_CATEGORY_ALL)
 
             wasCompanionEquipmentJunkTabMainMenuAdded = true
         end
