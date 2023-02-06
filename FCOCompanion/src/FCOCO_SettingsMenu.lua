@@ -58,6 +58,26 @@ function FCOCompanion.buildAddonMenu()
             requiresReload = true,
         },
 
+
+        --==============================================================================
+        {
+            type = 'header',
+            name = GetString(FCOCO_LAM_SETTING_HEADER_JUNK),
+        },
+        {
+            type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK),
+            tooltip = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK_TT),
+            getFunc = function() return settings.enableCompanionItemJunk end,
+            setFunc = function(value) settings.enableCompanionItemJunk = value
+            end,
+            default = defaults.enableCompanionItemJunk,
+            width="full",
+            disabled = function() return LibCustomMenu == nil end,
+            requiresReload = true,
+        },
+
+
         --==============================================================================
         {
             type = 'header',

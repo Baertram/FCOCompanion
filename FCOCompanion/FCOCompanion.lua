@@ -505,6 +505,7 @@ local function OnCrouchingEnded()
     setupCrouchEndTimerCallback()
 end
 
+
 --The stealth state changed
 --[[
 * STEALTH_STATE_DETECTED
@@ -573,6 +574,9 @@ function FCOCompanion.addonLoaded(eventName, addon)
 
     --Fishing Start
     SecurePostHook(FISHING_MANAGER, "StartInteraction", OnStartInteraction)
+
+    --Check if the companion items should be "custom junkable"
+    FCOCompanion.EnableJunkCheck()
 
     --EVENTS
     EM:RegisterForEvent(addonName, EVENT_PLAYER_ACTIVATED, FCOCompanion.Player_Activated)

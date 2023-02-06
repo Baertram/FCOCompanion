@@ -12,6 +12,10 @@ local stringsEN = {
     FCOCO_LAM_SV_EACH_CHARACTER                             = "Each character",
     FCOCO_LAM_SV_ACCOUNT_WIDE                               = "Account wide",
 
+    FCOCO_LAM_SETTING_HEADER_JUNK                           = GetString(SI_ITEMTYPEDISPLAYCATEGORY9),
+    FCOCO_LAM_SETTING_ENABLE_JUNK                           = "Companion items->junk",
+    FCOCO_LAM_SETTING_ENABLE_JUNK_TT                        = "Enable this to add the contextmenu entry \'Add to junk\' to companion items. If marked as junk they will be shown at the Junk tab in your inventory then.",
+
     FCOCO_LAM_SETTING_HEADER_CRAFTING                       = GetString(SI_SKILLTYPE8),
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE            = "Dismiss at crafting table",
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT         = "Hide your active companion if you interact with a crafting table",

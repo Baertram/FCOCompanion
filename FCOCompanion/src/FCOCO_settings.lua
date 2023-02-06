@@ -43,6 +43,9 @@ function FCOCompanion.getSettings()
         unSummonAtCrouchingNoCombat         = false,
         reSummonAfterCrouching              = false,
         reSummonAfterCrouchingDelay         = 5000,
+
+        enableCompanionItemJunk             = false,
+        companionItemsJunked                = {},
     }
     FCOCompanion.settingsVars.defaults = defaults
 
