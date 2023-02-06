@@ -135,13 +135,13 @@ local function enableJunkCheck()
         if origReturnVar == false then
             local itemId
             isCompanionItem, itemId = companionItemChecks(bagId, slotIndex, isCompanionItem)
---d("[CanItemBeMarkedAsJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId))
+            --d("[CanItemBeMarkedAsJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId))
             if isCompanionItem and itemId ~= nil then
---d("<true")
+                --d("<true")
                 return true
             end
         end
---d("<[CanItemBeMarkedAsJunk]origFuncCall return var: " ..tostring(origReturnVar))
+        --d("<[CanItemBeMarkedAsJunk]origFuncCall return var: " ..tostring(origReturnVar))
         return origReturnVar
     end
 
@@ -155,7 +155,7 @@ local function enableJunkCheck()
                 -->Checking preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] == true and resetting
                 if preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] ~= nil and
                         preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] == true then
---d("<[IsItemJunk]ABORT as bagId and slotIndex already got the \'Remove from junk\' custom slotAction entry!")
+                    --d("<[IsItemJunk]ABORT as bagId and slotIndex already got the \'Remove from junk\' custom slotAction entry!")
                     preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = nil
                     return origReturnVar
                 end
@@ -163,34 +163,34 @@ local function enableJunkCheck()
 
             local itemId
             isCompanionItem, itemId = companionItemChecks(bagId, slotIndex, isCompanionItem)
---d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId))
+            --d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId))
             if isCompanionItem and itemId ~= nil then
---d(">itemIsJunked: " ..tostring(junkedCompanionItems[itemId]))
+                --d(">itemIsJunked: " ..tostring(junkedCompanionItems[itemId]))
                 if junkedCompanionItems[itemId] == true then
---d("<true")
+                    --d("<true")
                     return true
                 else
---d("<false")
+                    --d("<false")
                     return false
                 end
             end
         end
---d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
+        --d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
         return origReturnVar
     end
 
 
     local function setCompanionItemJunk(bagId, slotIndex, isJunk)
         local isCompanionItem, itemId = companionItemChecks(bagId, slotIndex)
---d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId) .. ", isJunk: " ..tostring(isJunk))
+        --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemId: " ..tostring(itemId) .. ", isJunk: " ..tostring(isJunk))
         if isCompanionItem and itemId ~= nil then
             if isJunk == false then isJunk = nil end
             junkedCompanionItems[itemId] = isJunk
             PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
---d("<true")
+            --d("<true")
             return true
         end
---d("<false")
+        --d("<false")
         return false
     end
     FCOCompanion.SetCompanionItemIsJunk = setCompanionItemJunk
@@ -206,11 +206,11 @@ local function enableJunkCheck()
     local function updateInvSlotDataEntryDataForFiltering(slotActions, isJunk)
         --Update the slot so it's isJunk is set!
         local invSlotOfAction = slotActions.m_inventorySlot
-    --FCOCompanion._invSlotOfActions = invSlotOfAction
+        --FCOCompanion._invSlotOfActions = invSlotOfAction
         if invSlotOfAction ~= nil then
             local invSlotParent = invSlotOfAction:GetParent()
             if invSlotParent ~= nil then
-    --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
+                --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
                 invSlotOfAction.isJunk = isJunk
                 invSlotParent.dataEntry.data.isJunk = isJunk
             end
@@ -218,7 +218,7 @@ local function enableJunkCheck()
     end
 
     local function AddItem(inventorySlot, slotActions)
---d("[LCM:AddItem]")
+        --d("[LCM:AddItem]")
         if IsInGamepadPreferredMode() or QUICKSLOT_KEYBOARD:AreQuickSlotsShowing() then return end
         local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(inventorySlot)
         if bagId == nil or slotIndex == nil then return end
@@ -230,10 +230,10 @@ local function enableJunkCheck()
         if not isCompanionItem or itemId == nil then return end
 
         --local itemLink = GetItemLink(bagId, slotIndex)
---d(">" ..itemLink .. ", itemId: " ..tostring(itemId))
+        --d(">" ..itemLink .. ", itemId: " ..tostring(itemId))
         local isJunkable = CanItemBeMarkedAsJunk(bagId, slotIndex, isCompanionItem)
 
---d(">>isCompanionItem: " ..tostring(isCompanionItem) .. ", isJunkable: " ..tostring(isJunkable))
+        --d(">>isCompanionItem: " ..tostring(isCompanionItem) .. ", isJunkable: " ..tostring(isJunkable))
         if isCompanionItem == true and isJunkable == true then
             local isCurrentlyJunked = IsItemJunk(bagId, slotIndex, isCompanionItem)
 
@@ -274,9 +274,9 @@ local function enableJunkCheck()
         local isActorCategoryCompanionAndJunkTabAndMarkedAsJunk = (itemTypeDisplayCategory == ITEM_TYPE_DISPLAY_CATEGORY_JUNK and slot.actorCategory == GAMEPLAY_ACTOR_CATEGORY_COMPANION and slot.isJunk) or false
         if not isActorCategoryCompanionAndJunkTabAndMarkedAsJunk then return origFuncRetVar end
 
-    --local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(slot)
-    --d("[IsSlotIn...]" ..GetItemLink(bagId, slotIndex))
-    --d(">itemTypeDisplayCategory: " ..tostring(itemTypeDisplayCategory) .. ", itemTypeSubCategory: " ..tostring(itemTypeSubCategory))
+        --local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(slot)
+        --d("[IsSlotIn...]" ..GetItemLink(bagId, slotIndex))
+        --d(">itemTypeDisplayCategory: " ..tostring(itemTypeDisplayCategory) .. ", itemTypeSubCategory: " ..tostring(itemTypeSubCategory))
         --return ZO_ItemFilterUtils.IsSlotFilterDataInItemTypeDisplayCategory(slot, itemTypeSubCategory)
         return true
     end)
@@ -304,30 +304,30 @@ local function enableJunkCheck()
         ITEM_TYPE_DISPLAY_CATEGORY_JUNK, ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY, ITEM_TYPE_DISPLAY_CATEGORY_ARMOR, ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS, ITEM_TYPE_DISPLAY_CATEGORY_ALL,
     }
     local SEARCH_FILTER_KEYS =
+    {
+        [ITEM_TYPE_DISPLAY_CATEGORY_ALL] =
         {
-            [ITEM_TYPE_DISPLAY_CATEGORY_ALL] =
-            {
-                ITEM_TYPE_DISPLAY_CATEGORY_ALL,
-            },
-            [ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS] =
-            {
-                EQUIPMENT_FILTER_TYPE_RESTO_STAFF, EQUIPMENT_FILTER_TYPE_DESTRO_STAFF, EQUIPMENT_FILTER_TYPE_BOW,
-                EQUIPMENT_FILTER_TYPE_TWO_HANDED, EQUIPMENT_FILTER_TYPE_ONE_HANDED, EQUIPMENT_FILTER_TYPE_NONE,
-            },
-            [ITEM_TYPE_DISPLAY_CATEGORY_ARMOR] =
-            {
-                EQUIPMENT_FILTER_TYPE_SHIELD, EQUIPMENT_FILTER_TYPE_HEAVY, EQUIPMENT_FILTER_TYPE_MEDIUM,
-                EQUIPMENT_FILTER_TYPE_LIGHT, EQUIPMENT_FILTER_TYPE_NONE,
-            },
-            [ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY] =
-            {
-                EQUIPMENT_FILTER_TYPE_RING, EQUIPMENT_FILTER_TYPE_NECK, EQUIPMENT_FILTER_TYPE_NONE,
-            },
-            [ITEM_TYPE_DISPLAY_CATEGORY_JUNK] =
-            {
-                EQUIPMENT_FILTER_TYPE_NONE,
-            },
-        }
+            ITEM_TYPE_DISPLAY_CATEGORY_ALL,
+        },
+        [ITEM_TYPE_DISPLAY_CATEGORY_WEAPONS] =
+        {
+            EQUIPMENT_FILTER_TYPE_RESTO_STAFF, EQUIPMENT_FILTER_TYPE_DESTRO_STAFF, EQUIPMENT_FILTER_TYPE_BOW,
+            EQUIPMENT_FILTER_TYPE_TWO_HANDED, EQUIPMENT_FILTER_TYPE_ONE_HANDED, EQUIPMENT_FILTER_TYPE_NONE,
+        },
+        [ITEM_TYPE_DISPLAY_CATEGORY_ARMOR] =
+        {
+            EQUIPMENT_FILTER_TYPE_SHIELD, EQUIPMENT_FILTER_TYPE_HEAVY, EQUIPMENT_FILTER_TYPE_MEDIUM,
+            EQUIPMENT_FILTER_TYPE_LIGHT, EQUIPMENT_FILTER_TYPE_NONE,
+        },
+        [ITEM_TYPE_DISPLAY_CATEGORY_JEWELRY] =
+        {
+            EQUIPMENT_FILTER_TYPE_RING, EQUIPMENT_FILTER_TYPE_NECK, EQUIPMENT_FILTER_TYPE_NONE,
+        },
+        [ITEM_TYPE_DISPLAY_CATEGORY_JUNK] =
+        {
+            EQUIPMENT_FILTER_TYPE_NONE,
+        },
+    }
 
     local IS_SUB_FILTER = true
     local function GetSearchFilters(searchFilterKeys)
@@ -372,13 +372,27 @@ local function enableJunkCheck()
 
 
     COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT:RegisterCallback("StateChange", function(oldState, newState)
---d("[COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT]State: " ..tostring(newState))
+        --d("[COMPANION_EQUIPMENT_KEYBOARD_FRAGMENT]State: " ..tostring(newState))
         if newState == SCENE_FRAGMENT_SHOWN then
             if wasCompanionEquipmentJunkTabMainMenuAdded == false then
---d(">adding main menu bar \'Junk\' tab")
+                --d(">adding main menu bar \'Junk\' tab")
                 addJunkFilterTab(ZO_CompanionEquipment_Panel_Keyboard)
             end
         end
+    end)
+
+    --Change the filter function for companion items to filter custom junk marked items (from the "All" tab, all others seem to work fine so far)
+    local origZO_ItemFilterUtilsIsCompanionSlotInItemTypeDisplayCategoryAndSubcategory = ZO_ItemFilterUtils.IsCompanionSlotInItemTypeDisplayCategoryAndSubcategory
+    SecurePostHook(ZO_ItemFilterUtils, "IsCompanionSlotInItemTypeDisplayCategoryAndSubcategory", function(slot, itemTypeDisplayCategory, itemTypeSubCategory)
+        local origFuncRetVar = origZO_ItemFilterUtilsIsCompanionSlotInItemTypeDisplayCategoryAndSubcategory(slot, itemTypeDisplayCategory, itemTypeSubCategory)
+        if itemTypeDisplayCategory ~= ITEM_TYPE_DISPLAY_CATEGORY_ALL then return origFuncRetVar end
+
+        --Inventory Junk tab, companion item, which is marked as "custom junk"
+        local isMarkedAsJunk = slot.isJunk or false
+        if not isMarkedAsJunk then return origFuncRetVar end
+
+        --Filetr/hide as it's a junked item
+        return false
     end)
 end
 FCOCompanion.EnableJunkCheck = enableJunkCheck
