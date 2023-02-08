@@ -149,7 +149,7 @@ local function enableJunkCheck()
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
             --d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId))
             if isCompanionItem and itemInstanceId ~= nil then
-d("<[IsItemJunk]" .. GetItemLink(bagId, slotIndex) .. " itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
+--d("<[IsItemJunk]" .. GetItemLink(bagId, slotIndex) .. " itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
                 --d(">itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
                 if junkedCompanionItems[itemInstanceId] == true then
                     --d("<true")
@@ -160,9 +160,9 @@ d("<[IsItemJunk]" .. GetItemLink(bagId, slotIndex) .. " itemIsJunked: " ..tostri
                 end
             end
         end
-        if isCompanionItem == true then
-d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
-        end
+--        if isCompanionItem == true then
+--d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
+--        end
         return origReturnVar
     end
 
