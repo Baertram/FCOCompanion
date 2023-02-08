@@ -15,22 +15,44 @@ local invTypeToInvUpdateVar = {
     ["guildBankInv"] =    INVENTORY_GUILD_BANK,
     ["houseBankInv"] =    INVENTORY_HOUSE_BANK,
 }
-
+--Supported bagIds where companion items can be stored
+local companionItemBags = {
+    [BAG_BACKPACK]          = true,
+    [BAG_BANK]              = true,
+    [BAG_GUILDBANK]         = true,
+    [BAG_HOUSE_BANK_ONE]    = true,
+    [BAG_HOUSE_BANK_TWO]    = true,
+    [BAG_HOUSE_BANK_THREE]  = true,
+    [BAG_HOUSE_BANK_FOUR]   = true,
+    [BAG_HOUSE_BANK_FIVE]   = true,
+    [BAG_HOUSE_BANK_SIX]    = true,
+    [BAG_HOUSE_BANK_SEVEN]  = true,
+    [BAG_HOUSE_BANK_EIGHT]  = true,
+    [BAG_HOUSE_BANK_NINE]   = true,
+    [BAG_HOUSE_BANK_TEN]    = true,
+}
 
 local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
 FCOCompanion.preventNextSameBagIdAndSlotIndexUnjunkContextMenu = preventNextSameBagIdAndSlotIndexUnjunkContextMenu
 
 ------------------------------------------------------------------------------------------------------------------------
 
+--Is companion junk enabled at the settings?
+--returns boolean isCompanionJunkEnabled, table junkedItemsWithItemInstanceIdSavedVariablesOfCurrentToon
+function FCOCompanion.IsCompanionJunkEnabled()
+    local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
+    local isCompanionJunkEnabled = settingsPerToon ~= nil and settingsPerToon.enableCompanionItemJunk
+    return isCompanionJunkEnabled, settingsPerToon.companionItemsJunked
+end
+local isCompanionJunkEnabled = FCOCompanion.IsCompanionJunkEnabled
+
+
 local function enableJunkCheck()
     if not LibCustomMenu then return end
     local LCM = LibCustomMenu
 
-    local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
-    local isCompanionJunkEnabled = settingsPerToon.enableCompanionItemJunk
-    --Is companion junk enabled?
-    if not isCompanionJunkEnabled then return end
-
+    local isCompanionJunkCurrentlyEnabled = isCompanionJunkEnabled()
+    if not isCompanionJunkCurrentlyEnabled then return end
 
     playerInv = playerInv or PLAYER_INVENTORY
     compEquip = compEquip or COMPANION_EQUIPMENT_KEYBOARD
@@ -52,6 +74,44 @@ local function enableJunkCheck()
         return isCompanionItem, itemInstanceId
     end
 
+    local origHasAnyJunk = HasAnyJunk
+    function HasAnyJunk(bagId, excludeStolenItems)
+        excludeStolenItems = excludeStolenItems or false
+        local origRetVar = origHasAnyJunk(bagId, excludeStolenItems)
+
+        local isCompanionItemSupportedBag = companionItemBags[bagId] or false
+        if origRetVar == false and isCompanionItemSupportedBag == true then --Only supported companion item bagIds
+            --Check if there is any "junked companion item in the bag"
+            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+            if bagCache ~= nil then
+                for _, itemData in pairs(bagCache) do
+                    if itemData.actorCategory == nil then
+                        itemData.actorCategory = GetItemActorCategory(bagId, itemData.slotIndex)
+                    end
+                    --Is a companion item?
+                    if itemData.actorCategory ~= nil and itemData.actorCategory == GAMEPLAY_ACTOR_CATEGORY_COMPANION then
+                        --Is junked?
+                        if itemData.isJunk == true then
+                            --Exclude stolen items?
+                            if excludeStolenItems == true then
+                                if itemData.isStolen == nil then
+                                    itemData.isStolen = IsItemStolen(bagId, itemData.slotIndex)
+                                end
+                                --Is nt stolen: So we found a junked companion item
+                                if not itemData.isStolen then
+                                    return true
+                                end
+                            else
+                                --We found a junked companion items
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return origRetVar
+    end
 
     local origCanItemBeMarkedAsJunk = CanItemBeMarkedAsJunk
     function CanItemBeMarkedAsJunk(bagId, slotIndex, isCompanionItem)
@@ -89,6 +149,7 @@ local function enableJunkCheck()
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
             --d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId))
             if isCompanionItem and itemInstanceId ~= nil then
+d("<[IsItemJunk]" .. GetItemLink(bagId, slotIndex) .. " itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
                 --d(">itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
                 if junkedCompanionItems[itemInstanceId] == true then
                     --d("<true")
@@ -99,7 +160,9 @@ local function enableJunkCheck()
                 end
             end
         end
-        --d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
+        if isCompanionItem == true then
+d("<[IsItemJunk]origFuncCall return var: " ..tostring(origReturnVar))
+        end
         return origReturnVar
     end
 
