@@ -167,24 +167,6 @@ local function enableJunkCheck()
     end
 
 
-
-    local function setCompanionItemJunk(bagId, slotIndex, isJunk)
-        local isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
-        --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunk: " ..tostring(isJunk))
-        if isCompanionItem and itemInstanceId ~= nil then
-            if isJunk == false then isJunk = nil end
-            junkedCompanionItems[itemInstanceId] = isJunk
-            PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-            --d("<true")
-            return true
-        end
-        --d("<false")
-        return false
-    end
-    FCOCompanion.SetCompanionItemIsJunk = setCompanionItemJunk
-
-
-
     --local playerInvListView = playerInv.inventories[BAG_BACKPACK].listView
     local function refreshInventoryToUpdateFilteredSlotData()
 --d("[FCOCompanion]refreshInventoryToUpdateFilteredSlotData")
@@ -211,68 +193,125 @@ local function enableJunkCheck()
         --ZO_ScrollList_RefreshVisible(playerInvListView, nil, nil)
     end
 
-    local function updateInvSlotDataEntryDataForFiltering(slotActions, isJunk, bagId, slotIndex)
-        local isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
+    local function updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
+        if bagId == nil or slotIndex == nil then return false end
+
+        if isCompanionItem == nil or itemInstanceId == nil then
+            isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
+        end
         if not isCompanionItem or itemInstanceId == nil then return end
 
         --Update the slot so it's isJunk is set!
-        local invSlotOfAction = slotActions.m_inventorySlot
+        --local invSlotOfAction = slotActions.m_inventorySlot
         --FCOCompanion._invSlotOfActions = invSlotOfAction
-        if invSlotOfAction ~= nil then
-            local invSlotParent = invSlotOfAction:GetParent()
-            if invSlotParent ~= nil then
-                --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
-                invSlotOfAction.isJunk = isJunk
 
-                if invSlotParent.dataEntry ~= nil and invSlotParent.dataEntry.data ~= nil then
-                    if invSlotParent.dataEntry.data.dataSource ~= nil then
-                        invSlotParent.dataEntry.data.dataSource.isJunk = isJunk
-                    else
-                        invSlotParent.dataEntry.data.isJunk = isJunk
-                    end
-                end
+        local data, bagCache
+        if inventorySlot ~= nil then
+            local invSlotParent = inventorySlot:GetParent()
+            if invSlotParent ~= nil and invSlotParent.dataEntry ~= nil and invSlotParent.dataEntry.data ~= nil then
+                data = invSlotParent.dataEntry.data
+            end
+        end
 
-                --Check the inventory for other companion items which use the same itemInstanceId, but another slotIndex,
-                --and which need to be auto-junk marked because of this
-                --or
-                --Check the junked items for other companion items which use the same itemInstanceId, but another slotIndex,
-                --and which need to be auto-un-junk marked because of this
-                --Get cached items of the current bag
-                if not FCOCompanion.settingsVars.settingsPerToon.autoJunkMarkSameCompanionItemsInBags then return end
+        --Determine the current inventory slot
+        if inventorySlot == nil or data == nil then
+            --inventorySlot = moc() --is this enough? Should be the current control below the mouse
+            bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+            if bagCache ~= nil and bagCache[slotIndex] ~= nil then
+                data = bagCache[slotIndex]
+                inventorySlot = bagCache[slotIndex].slotControl
+            end
+        end
 
-                local changedItems = 0
-                local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
-                if bagCache ~= nil then
-                    for _, itemData in pairs(bagCache) do
-                        if itemData.slotIndex ~= nil and itemData.slotIndex ~= slotIndex then
-                            if itemData.actorCategory == nil then
-                                itemData.actorCategory = GetItemActorCategory(bagId, itemData.slotIndex)
-                            end
-                            if itemData.actorCategory ~= nil and itemData.actorCategory == GAMEPLAY_ACTOR_CATEGORY_COMPANION then
-                                if itemData.isJunk ~= isJunk then
-                                    if itemData.itemStanceId == nil then
-                                        itemData.itemStanceId = GetItemInstanceId(bagId, itemData.slotIndex)
-                                    end
-                                    if itemData.itemStanceId ~= nil then
-                                        local iiidStr= zo_getSafeId64Key(itemData.itemStanceId)
-                                        --Same item, but other slotIndex?
-                                        if iiidStr == itemInstanceId then
-                                            --d(">found another item: " .. GetItemLink(bagId, itemData.slotIndex))
-                                            itemData.isJunk = isJunk
-                                            --changedItems = changedItems + 1
-                                        end
+        if data ~= nil and inventorySlot ~= nil then
+            --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
+            inventorySlot.isJunk = isJunk
+
+            if data.dataSource ~= nil then
+                data.dataSource.isJunk = isJunk
+            else
+                data.isJunk = isJunk
+            end
+
+            --Check the inventory for other companion items which use the same itemInstanceId, but another slotIndex,
+            --and which need to be auto-junk marked because of this
+            --or
+            --Check the junked items for other companion items which use the same itemInstanceId, but another slotIndex,
+            --and which need to be auto-un-junk marked because of this
+            --Get cached items of the current bag
+            if not FCOCompanion.settingsVars.settingsPerToon.autoJunkMarkSameCompanionItemsInBags then return end
+
+            local changedItems = 0
+            if bagCache == nil then
+                bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+            end
+            if bagCache ~= nil then
+                for _, itemData in pairs(bagCache) do
+                    if itemData.slotIndex ~= nil and itemData.slotIndex ~= slotIndex then
+                        if itemData.actorCategory == nil then
+                            itemData.actorCategory = GetItemActorCategory(bagId, itemData.slotIndex)
+                        end
+                        if itemData.actorCategory ~= nil and itemData.actorCategory == GAMEPLAY_ACTOR_CATEGORY_COMPANION then
+                            if itemData.isJunk ~= isJunk then
+                                if itemData.itemStanceId == nil then
+                                    itemData.itemStanceId = GetItemInstanceId(bagId, itemData.slotIndex)
+                                end
+                                if itemData.itemStanceId ~= nil then
+                                    local iiidStr= zo_getSafeId64Key(itemData.itemStanceId)
+                                    --Same item, but other slotIndex?
+                                    if iiidStr == itemInstanceId then
+                                        --d(">found another item: " .. GetItemLink(bagId, itemData.slotIndex))
+                                        itemData.isJunk = isJunk
+                                        --changedItems = changedItems + 1
                                     end
                                 end
                             end
                         end
                     end
-                    --if changedItems > 0 then
-                    --d(">changed items: " ..tostring(changedItems))
-                    --end
                 end
+                --if changedItems > 0 then
+                --d(">changed items: " ..tostring(changedItems))
+                --end
             end
         end
     end
+
+
+    --Do not use an own API function FCOCompanion.SetCompanionItemIsJunk but use normal SetItemIsJunk(bagId, slotIndex, isItemJunk) instead
+    local function setCompanionItemJunk(bagId, slotIndex, isJunk, isCompanionItem, itemInstanceId, inventorySlot)
+        if isCompanionItem == nil or itemInstanceId == nil then
+            isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
+        end
+        --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunk: " ..tostring(isJunk))
+        if isCompanionItem == true and itemInstanceId ~= nil then
+            if isJunk == false then isJunk = nil end
+            junkedCompanionItems[itemInstanceId] = isJunk
+            PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+
+            --Update the inventory slot data
+            updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
+            --refresh the visible scroll list
+            refreshInventoryToUpdateFilteredSlotData()
+
+            --d("<true")
+            return true
+        end
+        --d("<false")
+        return false
+    end
+
+
+    local origSetItemIsJunk = SetItemIsJunk
+    function SetItemIsJunk(bagId, slotIndex, isJunk, isCompanionItem)
+        local itemInstanceId
+        isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
+        if isCompanionItem == true and itemInstanceId ~= nil then
+            return setCompanionItemJunk(bagId, slotIndex, isJunk, isCompanionItem, itemInstanceId, nil)
+        end
+        --No Companion item, just call the original function SetItemIsJunk
+        return origSetItemIsJunk(bagId, slotIndex, isJunk)
+    end
+
 
     local function AddItem(inventorySlot, slotActions)
         --d("[LCM:AddItem]")
@@ -297,20 +336,26 @@ local function enableJunkCheck()
             if isCurrentlyJunked == false then
                 --:AddSlotAction(actionStringId, actionCallback, actionType, visibilityFunction, options)
                 slotActions:AddCustomSlotAction(SI_ITEM_ACTION_MARK_AS_JUNK, function()
-                    if setCompanionItemJunk(bagId, slotIndex, true) == true then
-                        updateInvSlotDataEntryDataForFiltering(slotActions, true, bagId, slotIndex)
+                    if setCompanionItemJunk(bagId, slotIndex, true, isCompanionItem, itemInstanceId, slotActions.m_inventorySlot) == true then
+                        --[[
+                        --Update the slot so it's isJunk is set!
+                        updateInvSlotDataEntryDataForFiltering(slotActions, true, bagId, slotIndex, isCompanionItem, itemInstanceId)
+                        --Refresh the visible scrolllist and the slotsData properly -> Inventory refresh?
                         refreshInventoryToUpdateFilteredSlotData()
+                        ]]
                     end
                 end , "", nil, nil)
                 preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] = preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] or {}
                 preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = nil
             else
                 slotActions:AddCustomSlotAction(SI_ITEM_ACTION_UNMARK_AS_JUNK, function()
-                    if setCompanionItemJunk(bagId, slotIndex, false) == true then
+                    if setCompanionItemJunk(bagId, slotIndex, false, isCompanionItem, itemInstanceId, slotActions.m_inventorySlot) == true then
+                        --[[
                         --Update the slot so it's isJunk is set!
-                        updateInvSlotDataEntryDataForFiltering(slotActions, false, bagId, slotIndex)
+                        updateInvSlotDataEntryDataForFiltering(slotActions, false, bagId, slotIndex, isCompanionItem, itemInstanceId)
                         --Refresh the visible scrolllist and the slotsData properly -> Inventory refresh?
                         refreshInventoryToUpdateFilteredSlotData()
+                        ]]
                     end
                 end , "", nil, nil)
                 --Prevent showing the "Unjunk item" entry at teh context menu slotActions -> Vanilla ESO -> Checked at function IsItemJunk!

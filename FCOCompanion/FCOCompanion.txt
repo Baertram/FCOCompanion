@@ -1,7 +1,7 @@
 ## Title: |c00FF00FCO |cFFFF00Companion|r
 ## Author: Baertram
-## Version: 0.1.4
-## AddOnVersion: 001040
+## Version: 0.1.5
+## AddOnVersion: 001050
 ## APIVersion: 101036 101037
 ## Description: Change a few parts of the standard game UI
 ## SavedVariables: FCOCompanion_Settings FCOCompanion_Settings_PerToon
