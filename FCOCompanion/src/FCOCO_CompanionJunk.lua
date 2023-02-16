@@ -370,6 +370,54 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
     end
 
 
+    local origSellAllJunk = SellAllJunk
+    function SellAllJunk()
+--d("[FCOCO]SellAllJunk")
+        --Sell the normal junk items now
+        origSellAllJunk()
+
+        --Sell the companion junk items now
+        local bagId = BAG_BACKPACK
+        local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
+        if bagCache ~= nil then
+            junkedCompanionItems = FCOCompanion.settingsVars.settingsPerToon.companionItemsJunked
+
+            for _, itemData in pairs(bagCache) do
+                local isCompanionItem, itemInstanceId
+                local slotIndex = itemData.slotIndex
+                local isJunk = itemData.isJunk
+                if slotIndex ~= nil then
+                    if isJunk == nil then
+                        isJunk = IsItemJunk(bagId,slotIndex)
+                    end
+                    if isJunk == true then
+                        if itemData.actorCategory == GAMEPLAY_ACTOR_CATEGORY_COMPANION and itemData.itemInstanceId ~= nil then
+                            --Check if item is on the FCOCOmpanion junkedItem list and remove it there
+                            isCompanionItem = true
+                            itemInstanceId = zo_getSafeId64Key(itemData.itemInstanceId)
+                        else
+                            isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, nil)
+                        end
+                        if isCompanionItem == true and itemInstanceId ~= nil then
+--d(">companion item: " ..GetItemLink(bagId, slotIndex))
+                            --Remove item from FCOCompanion junkedItems SavedVariables
+                            if junkedCompanionItems[itemInstanceId] ~= nil then
+                                junkedCompanionItems[itemInstanceId] = nil
+--d(">SavedVars of companion junk item removed")
+                            end
+                            --Sell the item
+--d(">selling junked companion item")
+                            SellInventoryItem(bagId, slotIndex, 1) --Companion items should be of count 1, and not stacked? Else one could use GetItemTotalCount(bagId, itemData.slotIndex))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    --Assign the overwritten SellAllJunk function to the ESO dialog again, as else it won't be used
+    ESO_Dialogs.SELL_ALL_JUNK.buttons[1].callback = SellAllJunk
+
+
     local function AddItem(inventorySlot, slotActions)
 --d("[LCM:AddItem]")
         if IsInGamepadPreferredMode() or QUICKSLOT_KEYBOARD:AreQuickSlotsShowing() then return end
