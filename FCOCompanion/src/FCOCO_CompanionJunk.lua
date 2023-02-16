@@ -369,15 +369,14 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
         return origSetItemIsJunk(bagId, slotIndex, isJunk)
     end
 
+    --Will create or read the bagCache of bagId, and check for companion items that are junked
+    --if found, the callbackFunc will be called with parameters (bagId, slotIndex, ...) where ... are the additional params passed in after callbackFunc#
+    --If the parameter boolean addItemData is true the passed in params to the callback function will be bagId, slotIndex, itemData, ...
+    local function getBagCacheAndCheckForJunkedCompanionItemsAndCallCallback(bagId, callbackFunc, addItemData, ...)
+        if bagId == nil or callbackFunc == nil or type(callbackFunc) ~= "function" then return end
+        addItemData = addItemData or false
 
-    local origSellAllJunk = SellAllJunk
-    function SellAllJunk()
---d("[FCOCO]SellAllJunk")
-        --Sell the normal junk items now
-        origSellAllJunk()
-
-        --Sell the companion junk items now
-        local bagId = BAG_BACKPACK
+        --Get the companion items, which are junked, at the bagId now
         local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
         if bagCache ~= nil then
             junkedCompanionItems = FCOCompanion.settingsVars.settingsPerToon.companionItemsJunked
@@ -405,17 +404,56 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
                                 junkedCompanionItems[itemInstanceId] = nil
 --d(">SavedVars of companion junk item removed")
                             end
-                            --Sell the item
---d(">selling junked companion item")
-                            SellInventoryItem(bagId, slotIndex, 1) --Companion items should be of count 1, and not stacked? Else one could use GetItemTotalCount(bagId, itemData.slotIndex))
+                            --Call the callback func now
+--d(">Callback func call: " ..tostring(callbackFunc))
+                            if addItemData == true then
+                                callbackFunc(bagId, slotIndex, itemData, ...)
+                            else
+                                callbackFunc(bagId, slotIndex, ...)
+                            end
                         end
                     end
                 end
             end
         end
     end
+
+
+    local origSellAllJunk = SellAllJunk
+    function SellAllJunk()
+--d("[FCOCO]SellAllJunk")
+        --Sell the normal junk items now
+        origSellAllJunk()
+        --Sell possible companion junked items nows
+        getBagCacheAndCheckForJunkedCompanionItemsAndCallCallback(BAG_BACKPACK, SellInventoryItem, false, 1) --param 1 = stackCount 1 = sell 1 companion item
+    end
     --Assign the overwritten SellAllJunk function to the ESO dialog again, as else it won't be used
-    ESO_Dialogs.SELL_ALL_JUNK.buttons[1].callback = SellAllJunk
+    ESO_Dialogs["SELL_ALL_JUNK"].buttons[1].callback = SellAllJunk
+
+
+  --[[
+    local function destroyInventoryItemBySlotControl(bagId, slotIndex, slotData)
+        if slotData == nil or slotData.slotControl == nil then return end
+        local inventorySlot = slotData.slotControl
+        if not IsSlotLocked(inventorySlot) and ZO_InventorySlot_CanDestroyItem(inventorySlot) then
+--d(">DestroyItemInit now: " ..GetItemLink(bagId, slotIndex))
+            --ZO_InventorySlot_InitiateDestroyItem(inventorySlot)
+        end
+    end
+    ]]
+
+    local origDestroyAllJunk = DestroyAllJunk
+    function DestroyAllJunk()
+--d("[FCOCO]DestroyAllJunk")
+        --Sell the normal junk items now
+        origDestroyAllJunk()
+
+        --Destroy possible companion junked items now
+        getBagCacheAndCheckForJunkedCompanionItemsAndCallCallback(BAG_BACKPACK, DestroyItem, false)
+    end
+    --Assign the overwritten DestroyAllJunk function to the ESO dialog again, as else it won't be used
+    ESO_Dialogs["DESTROY_ALL_JUNK"].buttons[1].callback = DestroyAllJunk
+
 
 
     local function AddItem(inventorySlot, slotActions)
