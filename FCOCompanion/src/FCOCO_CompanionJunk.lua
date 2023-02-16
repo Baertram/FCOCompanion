@@ -32,8 +32,8 @@ local companionItemBags = {
     [BAG_HOUSE_BANK_TEN]    = true,
 }
 
-local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
-FCOCompanion.preventNextSameBagIdAndSlotIndexUnjunkContextMenu = preventNextSameBagIdAndSlotIndexUnjunkContextMenu
+--local preventNextSameBagIdAndSlotIndexUnjunkContextMenu = {}
+--FCOCompanion.preventNextSameBagIdAndSlotIndexUnjunkContextMenu = preventNextSameBagIdAndSlotIndexUnjunkContextMenu
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -119,38 +119,54 @@ local function enableJunkCheck()
         if origReturnVar == false then
             local itemInstanceId
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
-            --d("[CanItemBeMarkedAsJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId))
+--d("[CanItemBeMarkedAsJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId))
             if isCompanionItem and itemInstanceId ~= nil then
-                --d("<true")
+--d("<true")
                 return true
             end
         end
-        --d("<[CanItemBeMarkedAsJunk]origFuncCall return var: " ..tostring(origReturnVar))
+--d("<[CanItemBeMarkedAsJunk]origFuncCall return var: " ..tostring(origReturnVar))
         return origReturnVar
     end
 
     local origIsItemJunk = IsItemJunk
     function IsItemJunk(bagId, slotIndex, isCompanionItem)
         local origReturnVar = origIsItemJunk(bagId, slotIndex)
+        --Orig function says: Is no junk
         if origReturnVar == false then
+
+            --[[
+            --Not needed anymore as functon AddItems below does not add a custom context menu entry for "Remove from junk" anymore.
+            --We will just reuse the vanilla code API functions and context menu entry (as the slotActions for remove junk do not check the gameplayActorCategory,
+            --only the "Add to junk" does...)
+
             --Was called from ESO vanilla code?
             if isCompanionItem == nil then
-                --Check if the origFunction must return false in order to suppress the context menu entry
+                --Check if the origFunction must return false in order to suppress the context menu entry "Remove from junk", as the entry "Remoe from junk" was added by
+                --this addon FCOCompanion already -> See function "AddItems" below
+                -->We cannot simply use vanilla code to add the entries for "Add to junk" and "Remove from junk" as the ActionCategoryOwner companion was explicitly excluded there :(
+                --So we set a "skip variable" based on bagId and slotIndex at function "AddItems" and the next time the slotActions for "Remove from junk" are build this function
+                --IsItemJunk will be called and the "Remove from junk" entry wil be skipped
+
+                --So first check if slotActions are currently determined for the context menu, so another check with IsItemJunk(bagId, slotIndex) won't remove the "skip variables"
+                --to early!
+                --todo
+                --Then check if the skip variables are in place
                 -->Checking preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] == true and resetting
                 if preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] ~= nil and
                         preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] == true then
-                    --d("<[IsItemJunk]ABORT as bagId and slotIndex already got the \'Remove from junk\' custom slotAction entry!")
+d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" ..tostring(bagId) .. "][" ..tostring(slotIndex) .. "] = nil")
                     preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = nil
+                    --Return false to revent the 2nd entry to context menu: "Remove from junk"
                     return origReturnVar
                 end
             end
+            ]]
 
             local itemInstanceId
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
-            --d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId))
+--d("[IsItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
             if isCompanionItem and itemInstanceId ~= nil then
---d("<[IsItemJunk]" .. GetItemLink(bagId, slotIndex) .. " itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
-                --d(">itemIsJunked: " ..tostring(junkedCompanionItems[itemInstanceId]))
                 if junkedCompanionItems[itemInstanceId] == true then
                     --d("<true")
                     return true
@@ -306,6 +322,7 @@ local function enableJunkCheck()
         local itemInstanceId
         isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex, isCompanionItem)
         if isCompanionItem == true and itemInstanceId ~= nil then
+--d(">SetItemIsJunk - Companion item!")
             return setCompanionItemJunk(bagId, slotIndex, isJunk, isCompanionItem, itemInstanceId, nil)
         end
         --No Companion item, just call the original function SetItemIsJunk
@@ -314,7 +331,7 @@ local function enableJunkCheck()
 
 
     local function AddItem(inventorySlot, slotActions)
-        --d("[LCM:AddItem]")
+--d("[LCM:AddItem]")
         if IsInGamepadPreferredMode() or QUICKSLOT_KEYBOARD:AreQuickSlotsShowing() then return end
         local bagId, slotIndex = ZO_Inventory_GetBagAndIndex(inventorySlot)
         if bagId == nil or slotIndex == nil then return end
@@ -329,8 +346,8 @@ local function enableJunkCheck()
         --d(">" ..itemLink .. ", itemInstanceId: " ..tostring(itemInstanceId))
         local isJunkable = CanItemBeMarkedAsJunk(bagId, slotIndex, isCompanionItem)
 
-        --d(">>isCompanionItem: " ..tostring(isCompanionItem) .. ", isJunkable: " ..tostring(isJunkable))
         if isCompanionItem == true and isJunkable == true then
+--(">>isCompanionItem: " ..tostring(isCompanionItem) .. ", isJunkable: " ..tostring(isJunkable))
             local isCurrentlyJunked = IsItemJunk(bagId, slotIndex, isCompanionItem)
 
             if isCurrentlyJunked == false then
@@ -345,22 +362,25 @@ local function enableJunkCheck()
                         ]]
                     end
                 end , "", nil, nil)
-                preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] = preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] or {}
-                preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = nil
+--d("<<!!!preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" ..tostring(bagId) .. "][" ..tostring(slotIndex) .. "] = nil")
+                --preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] = preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] or {}
+                --preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = nil
+
+            --[[
+            --The slotAction is not checking the gameplay actor category at "Unmark junk"!
+            --As API function SetItemIsJunk was hooked now we do not need to explicitly add a new entry for "Unmark from junk".
+            --We will just reuse the vanilla jode "Remove from junk" now as the API functions will take care of the "companion item" checks
+            --Even if this addon is disabled you will be able ti "unmark companion items from junk then"
             else
                 slotActions:AddCustomSlotAction(SI_ITEM_ACTION_UNMARK_AS_JUNK, function()
                     if setCompanionItemJunk(bagId, slotIndex, false, isCompanionItem, itemInstanceId, slotActions.m_inventorySlot) == true then
-                        --[[
-                        --Update the slot so it's isJunk is set!
-                        updateInvSlotDataEntryDataForFiltering(slotActions, false, bagId, slotIndex, isCompanionItem, itemInstanceId)
-                        --Refresh the visible scrolllist and the slotsData properly -> Inventory refresh?
-                        refreshInventoryToUpdateFilteredSlotData()
-                        ]]
                     end
                 end , "", nil, nil)
+d(">>!!!preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" ..tostring(bagId) .. "][" ..tostring(slotIndex) .. "] = nil")
                 --Prevent showing the "Unjunk item" entry at teh context menu slotActions -> Vanilla ESO -> Checked at function IsItemJunk!
                 preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] = preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId] or {}
                 preventNextSameBagIdAndSlotIndexUnjunkContextMenu[bagId][slotIndex] = true
+            ]]
             end
         end
     end
