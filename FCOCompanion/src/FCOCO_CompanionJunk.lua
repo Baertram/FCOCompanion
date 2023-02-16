@@ -212,17 +212,26 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
 
     local calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
     local function updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
-        if bagId == nil or slotIndex == nil then return false end
+        if bagId == nil or slotIndex == nil then
+            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+            return
+        end
+--d("[FCOCO]updateInvSlotDataEntryDataForFiltering - " .. GetItemLink(bagId, slotIndex) .. ", isJunk: " ..tostring(isJunk))
 
         if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == nil then calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = true end
-        if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == false and isJunk == nil then return end
+        if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == false and isJunk == nil then
+            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+            return
+        end
 
         if isCompanionItem == nil or itemInstanceId == nil then
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
         end
-        if not isCompanionItem or itemInstanceId == nil then return end
---d("[FCOCO]updateInvSlotDataEntryDataForFiltering - " .. GetItemLink(bagId, slotIndex))
-
+        if not isCompanionItem or itemInstanceId == nil then
+            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+            return
+        end
+--d(">isCompanionItem!")
         --Update the slot so it's isJunk is set!
         --local invSlotOfAction = slotActions.m_inventorySlot
         --FCOCompanion._invSlotOfActions = invSlotOfAction
@@ -262,13 +271,22 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
                 data.isJunk = isJunk
             end
 
+            --No other junk item checks if called from external addon!
+            if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == true then
+                calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+                return
+            end
+
             --Check the inventory for other companion items which use the same itemInstanceId, but another slotIndex,
             --and which need to be auto-junk marked because of this
             --or
             --Check the junked items for other companion items which use the same itemInstanceId, but another slotIndex,
             --and which need to be auto-un-junk marked because of this
             --Get cached items of the current bag
-            if not FCOCompanion.settingsVars.settingsPerToon.autoJunkMarkSameCompanionItemsInBags then return end
+            if not FCOCompanion.settingsVars.settingsPerToon.autoJunkMarkSameCompanionItemsInBags then
+                calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+                return
+            end
 
             local changedItems = 0
             if bagCache == nil then
@@ -306,6 +324,15 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
     end
     FCOCompanion.UpdateInvSlotDataEntryDataForFiltering = updateInvSlotDataEntryDataForFiltering
 
+    local function updateInvSlotDataAndRefreshInv(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
+        --Set flag that we have called this from internally of this addon
+        calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = false
+        updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
+        --Reset flag that we have called this from internally fo this addon
+        calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
+        --refresh the visible scroll list
+        refreshInventoryToUpdateFilteredSlotData()
+    end
 
     --Do not use an own API function FCOCompanion.SetCompanionItemIsJunk but use normal SetItemIsJunk(bagId, slotIndex, isItemJunk) instead
     local function setCompanionItemJunk(bagId, slotIndex, isJunk, isCompanionItem, itemInstanceId, inventorySlot)
@@ -314,18 +341,13 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
         end
 --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunk: " ..tostring(isJunk))
         if isCompanionItem == true and itemInstanceId ~= nil then
-            if isJunk == false then isJunk = nil end
-            junkedCompanionItems[itemInstanceId] = isJunk
+            local isJunkForSavedVars = isJunk
+            if isJunkForSavedVars == false then isJunkForSavedVars = nil end
+            junkedCompanionItems[itemInstanceId] = isJunkForSavedVars
             PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
 
             --Update the inventory slot data
-            --Set flag that we have called this from internally of this addon
-            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = false
-            updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
-            --Reset flag that we have called this from internally fo this addon
-            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
-            --refresh the visible scroll list
-            refreshInventoryToUpdateFilteredSlotData()
+            updateInvSlotDataAndRefreshInv(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
 
             --d("<true")
             return true
