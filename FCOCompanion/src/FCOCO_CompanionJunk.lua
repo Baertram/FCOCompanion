@@ -208,6 +208,7 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
         invToUpdate:UpdateList(invVarToUse)
         --ZO_ScrollList_RefreshVisible(playerInvListView, nil, nil)
     end
+    FCOCompanion.RefreshInventoryToUpdateFilteredSlotData = refreshInventoryToUpdateFilteredSlotData
 
     local function updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
         if bagId == nil or slotIndex == nil then return false end
@@ -291,6 +292,7 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
             end
         end
     end
+    FCOCompanion.UpdateInvSlotDataEntryDataForFiltering = updateInvSlotDataEntryDataForFiltering
 
 
     --Do not use an own API function FCOCompanion.SetCompanionItemIsJunk but use normal SetItemIsJunk(bagId, slotIndex, isItemJunk) instead
