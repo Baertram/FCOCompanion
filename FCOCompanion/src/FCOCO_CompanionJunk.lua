@@ -210,13 +210,18 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
     end
     FCOCompanion.RefreshInventoryToUpdateFilteredSlotData = refreshInventoryToUpdateFilteredSlotData
 
+    local calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
     local function updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
         if bagId == nil or slotIndex == nil then return false end
+
+        if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == nil then calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = true end
+        if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == false and isJunk == nil then return end
 
         if isCompanionItem == nil or itemInstanceId == nil then
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
         end
         if not isCompanionItem or itemInstanceId == nil then return end
+--d("[FCOCO]updateInvSlotDataEntryDataForFiltering - " .. GetItemLink(bagId, slotIndex))
 
         --Update the slot so it's isJunk is set!
         --local invSlotOfAction = slotActions.m_inventorySlot
@@ -226,6 +231,7 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
         if inventorySlot ~= nil then
             local invSlotParent = inventorySlot:GetParent()
             if invSlotParent ~= nil and invSlotParent.dataEntry ~= nil and invSlotParent.dataEntry.data ~= nil then
+--d(">found inv slot parent -> data")
                 data = invSlotParent.dataEntry.data
             end
         end
@@ -235,13 +241,19 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
             --inventorySlot = moc() --is this enough? Should be the current control below the mouse
             bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagId)
             if bagCache ~= nil and bagCache[slotIndex] ~= nil then
+--d(">found inv slot by BAG cache -> data")
                 data = bagCache[slotIndex]
                 inventorySlot = bagCache[slotIndex].slotControl
             end
         end
 
         if data ~= nil and inventorySlot ~= nil then
-            --d(">found inv slot: " ..tostring(invSlotParent.dataEntry.data.rawName))
+            --For calls from other addons: Detect is item currently got isJunk flag true or false
+            if calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon == true and isJunk == nil then
+                isJunk = IsItemJunk(bagId, slotIndex, isCompanionItem)
+            end
+
+--d(">found inv slot & data, isJunk: " ..tostring(isJunk))
             inventorySlot.isJunk = isJunk
 
             if data.dataSource ~= nil then
@@ -300,14 +312,18 @@ d("<<<!!!ABORT [IsItemJunk] preventNextSameBagIdAndSlotIndexUnjunkContextMenu[" 
         if isCompanionItem == nil or itemInstanceId == nil then
             isCompanionItem, itemInstanceId = companionItemChecks(bagId, slotIndex)
         end
-        --d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunk: " ..tostring(isJunk))
+--d("[FCOCompanion.SetCompanionItemJunk]" ..GetItemLink(bagId, slotIndex).." - isCompanionItem: " ..tostring(isCompanionItem) .. ", itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunk: " ..tostring(isJunk))
         if isCompanionItem == true and itemInstanceId ~= nil then
             if isJunk == false then isJunk = nil end
             junkedCompanionItems[itemInstanceId] = isJunk
             PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
 
             --Update the inventory slot data
+            --Set flag that we have called this from internally of this addon
+            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = false
             updateInvSlotDataEntryDataForFiltering(inventorySlot, isJunk, bagId, slotIndex, isCompanionItem, itemInstanceId)
+            --Reset flag that we have called this from internally fo this addon
+            calledUpdateInvSlotDataEntryDataForFilteringFromExternalAddon = nil
             --refresh the visible scroll list
             refreshInventoryToUpdateFilteredSlotData()
 
