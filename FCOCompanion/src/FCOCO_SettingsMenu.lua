@@ -5,6 +5,8 @@ if not FCOCompanion.isCompanionUnlocked then return end
 
 
 local addonVars = FCOCompanion.addonVars
+local getCompanionJunkSavedVars = FCOCompanion.GetCompanionJunkSavedVars
+
 local LAM2 = FCOCompanion.LAM
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -16,7 +18,8 @@ function FCOCompanion.buildAddonMenu()
     if not settings or not LAM2 then return false end
     local defaults = FCOCompanion.settingsVars.defaults
     local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
-    local defaultsPerToon = FCOCompanion.settingsVars.defaultsPerToon
+    --local defaultsPerToon = FCOCompanion.settingsVars.defaultsPerToon
+    local companionJunkSV, companionJunkDefaults = getCompanionJunkSavedVars()
     local addonName = addonVars.addonName
 
 
@@ -70,26 +73,56 @@ function FCOCompanion.buildAddonMenu()
             type = "checkbox",
             name = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK),
             tooltip = GetString(FCOCO_LAM_SETTING_ENABLE_JUNK_TT),
-            getFunc = function() return settingsPerToon.enableCompanionItemJunk end,
-            setFunc = function(value) settingsPerToon.enableCompanionItemJunk = value
+            getFunc = function() return companionJunkSV.enableCompanionItemJunk end,
+            setFunc = function(value) companionJunkSV.enableCompanionItemJunk = value
             end,
-            default = defaultsPerToon.enableCompanionItemJunk,
+            default = companionJunkDefaults.enableCompanionItemJunk,
             width="full",
             disabled = function() return LibCustomMenu == nil end,
             requiresReload = true,
         },
         {
             type = "checkbox",
+            name = GetString(FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK),
+            tooltip = GetString(FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK_TT),
+            getFunc = function() return settings.useAccountWideCompanionJunk end,
+            setFunc = function(value) settings.useAccountWideCompanionJunk = value
+            end,
+            default = defaults.useAccountWideCompanionJunk,
+            width="full",
+            disabled = function() return LibCustomMenu == nil or not companionJunkSV.enableCompanionItemJunk end,
+            requiresReload = true,
+        },
+        {
+            type = "checkbox",
             name = GetString(FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS),
             tooltip = GetString(FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT),
-            getFunc = function() return settingsPerToon.autoJunkMarkSameCompanionItemsInBags end,
-            setFunc = function(value) settingsPerToon.autoJunkMarkSameCompanionItemsInBags = value
+            getFunc = function() return companionJunkSV.autoJunkMarkSameCompanionItemsInBags end,
+            setFunc = function(value) companionJunkSV.autoJunkMarkSameCompanionItemsInBags = value
             end,
-            default = defaultsPerToon.autoJunkMarkSameCompanionItemsInBags,
+            default = companionJunkDefaults.autoJunkMarkSameCompanionItemsInBags,
             width="full",
-            disabled = function() return LibCustomMenu == nil or not settingsPerToon.enableCompanionItemJunk end,
+            disabled = function() return LibCustomMenu == nil or not companionJunkSV.enableCompanionItemJunk end,
         },
 
+        {
+            type = "button",
+            name = GetString(FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC),
+            tooltip = GetString(FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC_TT),
+            func = function()
+                local wasExecuted, numMigrated = FCOCompanion.MigrateSVData(GetCurrentCharacterId(), true, true, "companionItemsJunked")
+                if wasExecuted == true then
+                    d(string.format(GetString(FCOCO_LAM_JUNK_MIGRATE_TO_ACC_TOTAL_STR), numMigrated))
+                end
+            end,
+            width = "full",
+            isDangerous = true,
+            disabled = function() return LibCustomMenu == nil or not companionJunkSV.enableCompanionItemJunk
+                                    or not settings.useAccountWideCompanionJunk
+                                    or ZO_IsTableEmpty(settingsPerToon.companionItemsJunked)
+                        end,
+            warning = GetString(FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC_TT),
+        },
 
         --==============================================================================
         {

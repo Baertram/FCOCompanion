@@ -573,7 +573,7 @@ function FCOCompanion.addonLoaded(eventName, addon)
     --ZO_PreHook("UseCollectible", wasCompanionDismissedByOtherCollectible)
 
     --Fishing Start
-    SecurePostHook(FISHING_MANAGER, "StartInteraction", OnStartInteraction)
+    SecurePostHook(FISHING_MANAGER or INTERACTIVE_WHEEL_MANAGER, "StartInteraction", OnStartInteraction)
 
     --Check if the companion items should be "custom junkable"
     FCOCompanion.EnableJunkCheck()

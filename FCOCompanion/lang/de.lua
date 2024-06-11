@@ -14,10 +14,16 @@ local stringsDE = {
     FCOCO_LAM_SV_ACCOUNT_WIDE                          = "Account weit",
 
     FCOCO_LAM_SETTING_HEADER_JUNK                      = GetString(SI_ITEMTYPEDISPLAYCATEGORY9),
+    FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK         = "Aktiviere Account weiten Gefährten Trödel",
+    FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK_TT      = "Aktiviere diese Option damit die Gefährten Trödel Markierungen, und die Einstellungen, für den gesamten Account gleich gespeichert werden. Ist diese Option deaktiviert, so werden die Einstellungen und Gegenstände je Charakter unterschiedlich gespeichert.",
     FCOCO_LAM_SETTING_ENABLE_JUNK                      = "Gefährten Gegenstände->Trödel",
     FCOCO_LAM_SETTING_ENABLE_JUNK_TT                   = "Aktiviere diese Option damit dein Inventar Kontextmenü den \'Markiere als Trödel\' Eintrag bei Gefährten Gegenständen anzeigt. Als Trödel markierte Gefährten Gegenstände werden dann auch auf dem Trödel Inventar Reiter angezeigt.",
     FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS             = "Auto-Markierung für gleiche Gegenstände im Beutel",
     FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT          = "Erkennt automatisch, ob der gleiche Gefährten Gegenstand noch einmal in deinem Beutel ist, und markiert/entfernt die Markierung bei diesem genau wie beim aktuell veränderten Gefährten Gegenstand.",
+    FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC              = "Migr. Trödel Char.->Acc.",
+    FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC_TT           = "Achtung: Migriert die Gefährten Trödel Gegenstände des aktuell eingeloggten Charakters zu den Account weiten. Es wird versucht die Gegenstände zu ergänzen, welche noch nicht im Account Weiten Gefährten Trödel vorhanden sind.",
+    FCOCO_LAM_JUNK_MIGRATE_TO_ACC_STR                  = "%s vom Charakter zum Account weiten Gefährten Trödel migriert",
+    FCOCO_LAM_JUNK_MIGRATE_TO_ACC_TOTAL_STR            = "Es wurden %s Gegenstände vom Charakter zum Account weiten Gefährten Trödel migriert",
 
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE       = "Wegschicken an Handwerksstationen",
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE_TT    = "Schickt deinen Begleiter an einer Handwerksstation fort, wenn du mit dieser interagierst",

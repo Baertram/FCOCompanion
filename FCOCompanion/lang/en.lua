@@ -13,10 +13,16 @@ local stringsEN = {
     FCOCO_LAM_SV_ACCOUNT_WIDE                               = "Account wide",
 
     FCOCO_LAM_SETTING_HEADER_JUNK                           = GetString(SI_ITEMTYPEDISPLAYCATEGORY9),
+    FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK              = "Enable account wide Companion junk",
+    FCOCO_LAM_SETTING_ENABLE_ACCOUNT_WIDE_JUNK_TT           = "Enable this to make the Companion junk items and settings saved account-wide. If disabled each character can use it's own settings.",
     FCOCO_LAM_SETTING_ENABLE_JUNK                           = "Companion items->junk",
     FCOCO_LAM_SETTING_ENABLE_JUNK_TT                        = "Enable this to add the contextmenu entry \'Add to junk\' to companion items. If marked as junk they will be shown at the Junk tab in your inventory then.",
     FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS                  = "Auto-mark same items in bags",
     FCOCO_LAM_SETTING_AUTO_JUNK_SAME_ITEMS_TT               = "Automatially detect if you got the same companion item, that you currently mark/unmark as junk, multiple times in your same bag, and apply/remove the junk mark on these too.",
+    FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC                   = "Migr. Junk Char.->Acc.",
+    FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC_TT                = "Attention: Migrate the currently saved character's Companion Junk items to the account. This will try to merge the saved Companion Junk items which weren't already added to the account wide companion junk items.",
+    FCOCO_LAM_JUNK_MIGRATE_TO_ACC_STR                       = "Migrated %s from character to account wide companion junk",
+    FCOCO_LAM_JUNK_MIGRATE_TO_ACC_TOTAL_STR                 = "%s items migrated from character to account wide companion junk",
 
     FCOCO_LAM_SETTING_HEADER_CRAFTING                       = GetString(SI_SKILLTYPE8),
     FCOCO_LAM_SETTING_UNSUMMON_AT_CRAFTING_TABLE            = "Dismiss at crafting table",
