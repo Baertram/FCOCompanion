@@ -85,6 +85,7 @@ local outputToChatMigrateOptionsTexts = {
     ["companionItemsJunked"] = FCOCO_LAM_JUNK_MIGRATE_TO_ACC_STR,
 }
 
+--[[ Does not work with itemInstanceId, only works with itemId!
 local function outputTransferedItemToChat(value, svOptionName)
     if value == nil then return end
     local valueForString = value
@@ -101,8 +102,46 @@ local function outputTransferedItemToChat(value, svOptionName)
 
     d(string.format(GetString(textConstant), valueForString))
 end
+]]
+
+function FCOCompanion.AnyCompanionJunkItemsToMigrate(toAccount)
+--d("[FCOCompanion.AnyCompanionJunkItemsToMigrate - toAccount: " ..tostring(toAccount))
+    if toAccount == nil then return false end
+    --Character SavedVars
+    local settingsPerToon = FCOCompanion.settingsVars.settingsPerToon
+    --Account SavedVars
+    local settingsAccount = FCOCompanion.settingsVars.settings
+
+    if settingsAccount == nil then return false end
+    if settingsPerToon == nil then return false end
+
+
+    --Migrate to the account wide
+    if toAccount == true then
+        for itemInstanceId, isJunked  in pairs(settingsPerToon.companionItemsJunked) do
+            if isJunked then
+                if not settingsAccount.companionItemsJunked[itemInstanceId] then
+--d(">found missing itemInstanceId: " ..tostring(itemInstanceId))
+                    return true
+                end
+            end
+        end
+        return false
+
+    else
+        for itemInstanceId, isJunked in pairs(settingsAccount.companionItemsJunked) do
+            if isJunked then
+                if not settingsPerToon.companionItemsJunked[itemInstanceId] then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+end
 
 function FCOCompanion.MigrateSVData(characterId, toAccount, mergeOrOverwrite, svOptionName)
+--d("[FCOCompanion.MigrateSVData - toAccount: " ..tostring(toAccount) .. ", mergeOrOverwrite: " ..tostring(mergeOrOverwrite) .. ", svOptionName: " ..tostring(svOptionName))
     if characterId == nil or toAccount == nil or mergeOrOverwrite == nil or svOptionName == nil then return nil, nil end
 
     --Character SavedVars
@@ -110,30 +149,36 @@ function FCOCompanion.MigrateSVData(characterId, toAccount, mergeOrOverwrite, sv
     --Account SavedVars
     local settingsAccount = FCOCompanion.settingsVars.settings
 
+    if settingsAccount == nil then return nil, nil end
+    if settingsPerToon == nil then return nil, nil end
+
+    local svOption = settingsAccount[svOptionName]
+    local svOptionType = type(svOption)
+    if svOptionType == "nil" then return nil, nil end
+    local svOptionChar = settingsPerToon[svOptionName]
+    local svOptionTypeChar = type(svOptionChar)
+    if svOptionTypeChar == "nil" or svOptionTypeChar ~= svOptionType then return nil, nil end
+
+    local tableResetDone = false
     --------------------------------------------------------------------------------------------------------------------
     --From character to account
     if toAccount == true then
-        if settingsAccount == nil then return nil, nil end
-        if settingsPerToon == nil then return nil, nil end
-
-        local svOptionType = settingsAccount[svOptionName]
-        if svOptionType == nil then return end
-        local svOptionTypeChar = settingsPerToon[svOptionName]
-        if svOptionTypeChar == nil or svOptionTypeChar ~= svOptionType then return end
-
         if svOptionType == "table" then
             local optionsTransferred = 0
-            if mergeOrOverwrite == false then
-                settingsAccount[svOptionName] = {}
-            end
-            for _, itemId in pairs(settingsPerToon[svOptionName]) do
-                if not mergeOrOverwrite or (mergeOrOverwrite  == true and not ZO_IsElementInNumericallyIndexedTable(itemId, settingsAccount[svOptionName])) then
-                    tins(settingsAccount[svOptionName], itemId)
-                    outputTransferedItemToChat(itemId, svOptionName)
+            for itemInstanceId, isJunked in pairs(settingsPerToon[svOptionName]) do
+--d(">itemInstanceId: " ..tostring(itemInstanceId) .. ", isJunked: " ..tostring(isJunked))
+                if isJunked and (not mergeOrOverwrite or (mergeOrOverwrite  == true and not settingsAccount[svOptionName][itemInstanceId])) then
+                    if mergeOrOverwrite == false and not tableResetDone then
+                        tableResetDone = true
+                        settingsAccount[svOptionName] = {}
+                    end
+
+                    settingsAccount[svOptionName][itemInstanceId] = true
+                    --outputTransferedItemToChat(itemInstanceId, svOptionName)
                     optionsTransferred = optionsTransferred + 1
                 end
             end
-            return true, optionsTransferred
+            return optionsTransferred > 0, optionsTransferred
         else
             if mergeOrOverwrite == true then
                 --Merge
@@ -142,7 +187,7 @@ function FCOCompanion.MigrateSVData(characterId, toAccount, mergeOrOverwrite, sv
             else
                 --Overwrite
                 settingsAccount[svOptionName] = settingsPerToon[svOptionName]
-                outputTransferedItemToChat(settingsAccount[svOptionName] , svOptionName)
+                --outputTransferedItemToChat(settingsAccount[svOptionName] , svOptionName)
                 return true, 1
             end
         end
@@ -150,28 +195,20 @@ function FCOCompanion.MigrateSVData(characterId, toAccount, mergeOrOverwrite, sv
     --------------------------------------------------------------------------------------------------------------------
     --From account to character
     else
-
-        if settingsAccount == nil then return nil, nil end
-        if settingsPerToon == nil then return nil, nil end
-
-        local svOptionType = settingsAccount[svOptionName]
-        if svOptionType == nil then return end
-        local svOptionTypeChar = settingsPerToon[svOptionName]
-        if svOptionTypeChar == nil or svOptionTypeChar ~= svOptionType then return end
-
         if svOptionType == "table" then
             local optionsTransferred = 0
-            if mergeOrOverwrite == false then
-                settingsPerToon[svOptionName] = {}
-            end
-            for _, itemId in pairs(settingsAccount[svOptionName]) do
-                if not mergeOrOverwrite or (mergeOrOverwrite  == true and not ZO_IsElementInNumericallyIndexedTable(itemId, settingsPerToon[svOptionName])) then
-                    tins(settingsPerToon[svOptionName], itemId)
-                    outputTransferedItemToChat(itemId, svOptionName)
+            for itemInstanceId, isJunked in pairs(settingsAccount[svOptionName]) do
+                if isJunked and (not mergeOrOverwrite or (mergeOrOverwrite  == true and not settingsPerToon[svOptionName][itemInstanceId])) then
+                    if mergeOrOverwrite == false and not tableResetDone then
+                        tableResetDone = true
+                        settingsPerToon[svOptionName] = {}
+                    end
+                    settingsPerToon[svOptionName][itemInstanceId] = true
+                    --outputTransferedItemToChat(itemInstanceId, svOptionName)
                     optionsTransferred = optionsTransferred + 1
                 end
             end
-            return true, optionsTransferred
+            return optionsTransferred > 0, optionsTransferred
         else
             if mergeOrOverwrite == true then
                 --Merge
@@ -180,7 +217,7 @@ function FCOCompanion.MigrateSVData(characterId, toAccount, mergeOrOverwrite, sv
             else
                 --Overwrite
                 settingsPerToon[svOptionName] = settingsAccount[svOptionName]
-                outputTransferedItemToChat(settingsPerToon[svOptionName] , svOptionName)
+                --outputTransferedItemToChat(settingsPerToon[svOptionName] , svOptionName)
                 return true, 1
             end
         end

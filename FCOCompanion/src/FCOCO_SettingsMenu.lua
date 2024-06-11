@@ -117,9 +117,11 @@ function FCOCompanion.buildAddonMenu()
             end,
             width = "full",
             isDangerous = true,
-            disabled = function() return LibCustomMenu == nil or not companionJunkSV.enableCompanionItemJunk
+            disabled = function() return LibCustomMenu == nil
+                                    or not companionJunkSV.enableCompanionItemJunk
                                     or not settings.useAccountWideCompanionJunk
                                     or ZO_IsTableEmpty(settingsPerToon.companionItemsJunked)
+                                    or FCOCompanion.AnyCompanionJunkItemsToMigrate(true) == false
                         end,
             warning = GetString(FCOCO_LAM_SETTING_JUNK_MIGRATE_TO_ACC_TT),
         },
