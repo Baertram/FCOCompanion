@@ -21,6 +21,7 @@ addonVars.addonWebsite              = "https://www.esoui.com/downloads/info3044-
 addonVars.addonFeedback             = "https://www.esoui.com/portal.php?uid=2028"
 addonVars.addonDonation             = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
 
+
 ------------------------------------------------------------------------------------------------------------------------
 --[Libraries]
 FCOCompanion.LAM = LibAddonMenu2
@@ -54,12 +55,13 @@ local companionInfo = {
 --[[
     [1] = 9245,     -- Bastian Helix, companionDefId 1,
     [2] = 9353,     -- Mirri Elendis, companionDefId 2,
-    [5] = 9911,     -- Funke, companionDefId 5,
+    [5] = 9911,     -- Ember, companionDefId 5,
     [6] = 9912,     -- Isobel, companionDefId 6,
+    ...
 ]]
 }
---Dynamic companion count, up to 20
-for i=1, 10, 1 do
+--Dynamic companion count, up to 30
+for i=1, 30, 1 do
     local companionCollectibleId = GetCompanionCollectibleId(i)
     if companionCollectibleId and companionCollectibleId > 0 then
         companionInfo[i] = companionCollectibleId

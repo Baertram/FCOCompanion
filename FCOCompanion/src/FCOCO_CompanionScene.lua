@@ -79,6 +79,12 @@ local function toggleCompanion(companionIdToShow, doShow, onlyIfLastCompanionWas
         lastCompanionDefId = 1 --Bastian Helix, companionDefId 1,
     end
 
+    --Current active assistant:
+    --local activeAssistantId = GetActiveCollectibleByType(COLLECTIBLE_CATEGORY_TYPE_ASSISTANT, GAMEPLAY_ACTOR_CATEGORY_PLAYER)
+    --if activeAssistantId ~= 0 then
+        --local assistantData = ZO_COLLECTIBLE_DATA_MANAGER:GetCollectibleDataById(id)
+    --end
+
     --A companion was called: Abort here and wait until it is there.
     local companionIsOnTheWay = HasPendingCompanion()
     local companionIsActive = HasActiveCompanion()
